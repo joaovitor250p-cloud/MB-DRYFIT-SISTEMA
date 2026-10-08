@@ -49,18 +49,30 @@
   });
 
   if (!state.roteirizacao || typeof state.roteirizacao !== 'object') {
-    state.roteirizacao = {
-      pontoInicial: null,
-      paradas: [],
-      ordem: [],
-      paradasTravadas: [],
-      retornarAoInicio: false,
-      geometria: null,
-      distanciaTotalMetros: null,
-      duracaoTotalSegundos: null,
-      calculadoEm: null
-    };
+    state.roteirizacao = {};
   }
+
+  const roteirizacaoPadrao = {
+    pontoInicial: null,
+    paradas: [],
+    ordem: [],
+    paradasTravadas: [],
+    retornarAoInicio: false,
+    geometria: null,
+    distanciaTotalMetros: null,
+    duracaoTotalSegundos: null,
+    calculadoEm: null,
+    paradaSelecionadaId: null,
+    mapaDisponivel: null,
+    geocodificacaoResumo: null
+  };
+
+  Object.keys(roteirizacaoPadrao).forEach((chave) => {
+    if (!(chave in state.roteirizacao)) {
+      const valor = roteirizacaoPadrao[chave];
+      state.roteirizacao[chave] = Array.isArray(valor) ? valor.slice() : valor;
+    }
+  });
 
   if (!state.navegacao || typeof state.navegacao !== 'object') {
     state.navegacao = {
@@ -96,6 +108,9 @@
     state.roteirizacao.distanciaTotalMetros = null;
     state.roteirizacao.duracaoTotalSegundos = null;
     state.roteirizacao.calculadoEm = null;
+    state.roteirizacao.paradaSelecionadaId = null;
+    state.roteirizacao.mapaDisponivel = null;
+    state.roteirizacao.geocodificacaoResumo = null;
 
     state.navegacao.ativa = false;
     state.navegacao.paradaAtualId = null;

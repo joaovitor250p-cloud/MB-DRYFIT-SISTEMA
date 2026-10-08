@@ -32,6 +32,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+    <link rel="stylesheet" href="css/mapa.css">
 
 
 
@@ -866,6 +868,37 @@
     </div>
 
     <div id="areaExecucao" style="display:none;">
+      <section id="routeWorkspace" class="route-workspace view-mapa" style="display:none;" aria-label="Mapa e paradas da rota">
+        <div class="route-workspace-header">
+          <div class="route-workspace-title">
+            <span class="route-workspace-kicker">ROTA ATUAL</span>
+            <strong>Mapa e paradas</strong>
+            <span id="routeGeoStatus" class="route-geo-status">Aguardando rota</span>
+          </div>
+
+          <div class="route-view-switch" role="tablist" aria-label="Visualização da rota">
+            <button id="routeTabMapa" class="active" type="button" onclick="PacoteEMatoMapa.alternarPainel('mapa')">Mapa</button>
+            <button id="routeTabParadas" type="button" onclick="PacoteEMatoMapa.alternarPainel('lista')">Paradas</button>
+          </div>
+        </div>
+
+        <div class="route-workspace-body">
+          <aside class="route-stops-pane" aria-label="Lista de paradas">
+            <div class="route-stops-head">
+              <strong>Paradas físicas</strong>
+              <span id="routeStopsSummary">0 de 0 concluídas</span>
+            </div>
+            <div id="listaParadasMapa" class="route-stops-list"></div>
+          </aside>
+
+          <div class="route-map-pane" aria-label="Mapa da rota">
+            <div id="mapaRota"></div>
+            <div id="mapaFallback" class="route-map-fallback"></div>
+            <div id="mapaSelectedSheet" class="map-selected-sheet" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
       <div class="metrics-board" id="elMetricsBoard">
         <div class="metric-cell">
           <div class="metric-val" id="valPacotes">0 / 0</div>
@@ -934,36 +967,20 @@
 
 
 
-<!-- PACOTE EM MATO V5 - DIAGNOSTICO LEITOR PDF -->
-<script src="js/diagnosticos/diagnostico-v5.js"></script>
-
-<script src="js/diagnosticos/diagnostico-v6.js"></script>
-
-
-<script src="js/diagnosticos/diagnostico-v9.js"></script>
-
-
-
+<!-- Diagnósticos preservados, agora consolidados por responsabilidade -->
+<script src="js/diagnosticos/diagnostico-rota.js"></script>
 <script src="js/diagnosticos/diagnostico-ui.js"></script>
 
-<script src="js/correcoes/correcao-v13.js"></script>
+<!-- Helpers legados de endereço preservados sem alterar o agrupamento do app.js -->
+<script src="js/paradas/compatibilidade-enderecos.js"></script>
 
-
-<script src="js/correcoes/correcao-v14.js"></script>
-
-<script src="js/correcoes/correcao-v18.js"></script>
-
-
-<script src="js/diagnosticos/diagnostico-v19.js"></script>
-
-
-<script src="js/correcoes/correcao-v20.js"></script>
-
-
-<script src="js/correcoes/correcao-v26.js"></script>
-
-
-<script src="js/correcoes/correcao-v32.js"></script>
+<!-- ETAPA 4: mapa + paradas + geocodificação -->
+<script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+<script src="js/mapa/config.js"></script>
+<script src="js/mapa/cache-geocodificacao.js"></script>
+<script src="js/mapa/geocodificacao.js"></script>
+<script src="js/mapa/mapa.js"></script>
+<script src="js/mapa/integracao-rota.js"></script>
 
 </body>
 </html>
