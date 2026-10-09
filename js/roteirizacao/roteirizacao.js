@@ -8,6 +8,9 @@
   let resolverDecisaoReotimizacao = null;
   let importacaoPendente = null;
   let resolverMapeamentoImportacao = null;
+  let estadoPainel = 'collapsed';
+  let sheetDragStartY = null;
+  let sheetDragLastY = null;
 
   function $(id) { return document.getElementById(id); }
   function clone(v) { return global.PacoteEMatoRotaStore?.clone?.(v) || JSON.parse(JSON.stringify(v)); }
@@ -219,10 +222,121 @@
     return !!String(global.PEMATO_MAP_CONFIG?.workerBaseUrl || global.PacoteEMatoMapaConfig?.obterWorkerBaseUrl?.() || '').trim();
   }
 
+
+  function ambienteMobile() {
+    try { return global.matchMedia?.('(max-width: 820px)')?.matches === true; }
+    catch (_) { return global.innerWidth <= 820; }
+  }
+
+  function definirEstadoPainel(estado) {
+    const root = $('routingWorkspace');
+    if (!root) return;
+    estadoPainel = estado === 'expanded' ? 'expanded' : 'collapsed';
+    root.classList.toggle('sheet-expanded', estadoPainel === 'expanded');
+    root.classList.toggle('sheet-collapsed', estadoPainel !== 'expanded');
+    $('routingSheetToggle')?.setAttribute('aria-expanded', estadoPainel === 'expanded' ? 'true' : 'false');
+    if (estadoPainel === 'expanded') setTimeout(() => $('routingStopSearch')?.focus?.({ preventScroll: true }), 180);
+    else setTimeout(() => global.PacoteEMatoMapa?.renderizar?.(), 220);
+  }
+
+  function alternarPainel() {
+    definirEstadoPainel(estadoPainel === 'expanded' ? 'collapsed' : 'expanded');
+  }
+
+  function abrirMenuAcoes() {
+    const backdrop = $('routingActionsBackdrop');
+    if (!backdrop) return;
+    atualizarDisponibilidadeAcoes();
+    backdrop.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function fecharMenuAcoes() {
+    const backdrop = $('routingActionsBackdrop');
+    if (backdrop) backdrop.style.display = 'none';
+    if (document.body.dataset.pematoModule !== 'roteirizacao') document.body.style.overflow = '';
+  }
+
+  function atualizarDisponibilidadeAcoes() {
+    const serviceReady = workerConfigurado();
+    document.querySelectorAll('.routing-service-action').forEach(el => { el.style.display = serviceReady ? '' : 'none'; });
+    const note = $('routingServiceDeferredNote');
+    if (note) note.style.display = serviceReady ? 'none' : 'block';
+    const routeReady = !!rotaAtual?.geometria;
+    document.querySelectorAll('.routing-route-ready-action').forEach(el => { el.style.display = routeReady ? '' : 'none'; });
+    if ($('routingInvertBtn')) $('routingInvertBtn').style.display = rotaAtual?.rotaOtimizada ? '' : 'none';
+  }
+
+  function atualizarAcaoPrincipal() {
+    const btn = $('routingPrimaryActionBtn');
+    const empty = $('routingEmptyState');
+    const total = rotaAtual?.paradas?.length || 0;
+    if (empty) empty.style.display = total ? 'none' : 'flex';
+    if (!btn) return;
+    if (!total) {
+      btn.textContent = 'Importar planilha';
+      btn.dataset.action = 'importar';
+      btn.style.display = '';
+      return;
+    }
+    if (rotaAtual?.geometria) {
+      btn.textContent = 'Iniciar rota';
+      btn.dataset.action = 'iniciar';
+      btn.style.display = '';
+      return;
+    }
+    if (workerConfigurado()) {
+      const faltantes = rotaAtual.paradas.filter(p => !paradaLocalizada(p)).length;
+      btn.textContent = faltantes ? 'Localizar endereços' : 'Otimizar rota';
+      btn.dataset.action = faltantes ? 'localizar' : 'otimizar';
+      btn.style.display = '';
+      return;
+    }
+    btn.textContent = '';
+    btn.dataset.action = '';
+    btn.style.display = 'none';
+  }
+
+  function executarAcaoPrincipal() {
+    const acao = $('routingPrimaryActionBtn')?.dataset.action || '';
+    if (acao === 'importar') return $('routingXlsxInput')?.click();
+    if (acao === 'iniciar') return abrirNavegacao();
+    if (acao === 'localizar') return geocodificarTodas();
+    if (acao === 'otimizar') return otimizarRota();
+    definirEstadoPainel('expanded');
+  }
+
+  function iniciarArrastePainel() {
+    const handle = $('routingSheetHandle');
+    if (!handle || handle.dataset.dragBound === '1') return;
+    handle.dataset.dragBound = '1';
+    handle.addEventListener('pointerdown', event => {
+      if (!ambienteMobile()) return;
+      sheetDragStartY = event.clientY;
+      sheetDragLastY = event.clientY;
+      try { handle.setPointerCapture(event.pointerId); } catch (_) {}
+    });
+    handle.addEventListener('pointermove', event => {
+      if (sheetDragStartY == null) return;
+      sheetDragLastY = event.clientY;
+    });
+    const concluir = () => {
+      if (sheetDragStartY == null) return;
+      const delta = (sheetDragLastY ?? sheetDragStartY) - sheetDragStartY;
+      sheetDragStartY = null;
+      sheetDragLastY = null;
+      if (Math.abs(delta) < 18) return alternarPainel();
+      definirEstadoPainel(delta < 0 ? 'expanded' : 'collapsed');
+    };
+    handle.addEventListener('pointerup', concluir);
+    handle.addEventListener('pointercancel', concluir);
+  }
+
   function definirStatusImportacao(texto, tom) {
     const el = $('routingImportStatus');
     if (!el) return;
     el.textContent = texto || '';
+    el.style.display = texto ? 'block' : 'none';
     if (tom) el.dataset.tone = tom;
     else delete el.dataset.tone;
   }
@@ -256,12 +370,28 @@
     if ($('routeMetricTotal')) $('routeMetricTotal').textContent = formatarTempo(rotaAtual.duracaoTotalSegundos);
     if ($('routeMetricEnd')) $('routeMetricEnd').textContent = horaLocal(rotaAtual.horarioTerminoEstimado);
     if ($('routingRouteName') && document.activeElement !== $('routingRouteName')) $('routingRouteName').value = rotaAtual.nome || '';
+    if ($('routingRouteNameMirror') && document.activeElement !== $('routingRouteNameMirror')) $('routingRouteNameMirror').value = rotaAtual.nome || '';
+    if ($('routingMapTitle')) $('routingMapTitle').textContent = rotaAtual.nome || 'Rota de hoje';
     const flag = $('routingOptimizedFlag');
     if (flag) {
-      flag.textContent = rotaAtual.rotaOtimizada ? 'Rota otimizada e salva como ativa' : 'Rota em planejamento';
+      flag.textContent = rotaAtual.rotaOtimizada ? 'Rota otimizada' : 'Rota em planejamento';
       flag.dataset.optimized = rotaAtual.rotaOtimizada ? 'true' : 'false';
     }
+    const headline = $('routingSheetHeadline');
+    const meta = $('routingSheetMeta');
+    if (headline) {
+      headline.textContent = rotaAtual.horarioTerminoEstimado
+        ? `Término: ${horaLocal(rotaAtual.horarioTerminoEstimado)}`
+        : (rotaAtual.rotaOtimizada ? 'Rota pronta' : 'Rota em planejamento');
+    }
+    if (meta) {
+      const paradaTexto = `${total} ${total === 1 ? 'parada' : 'paradas'}`;
+      const distancia = formatarDistancia(rotaAtual.distanciaTotalMetros);
+      meta.textContent = distancia === '—' ? paradaTexto : `${paradaTexto} · ${distancia}`;
+    }
     renderizarPreferencias();
+    atualizarDisponibilidadeAcoes();
+    atualizarAcaoPrincipal();
   }
 
   function criarBotao(texto, classe, handler) {
@@ -285,7 +415,13 @@
       return;
     }
 
-    obterParadasOrdenadas().forEach((p, index) => {
+    const termoBusca = String($('routingStopSearch')?.value || '').trim().toLowerCase();
+    const listaFiltrada = obterParadasOrdenadas().filter(p => {
+      if (!termoBusca) return true;
+      const alvo = [p.enderecoOriginal, p.cidade, p.observacao, ...(p.pacotes || [])].join(' ').toLowerCase();
+      return alvo.includes(termoBusca);
+    });
+    listaFiltrada.forEach((p, index) => {
       const card = document.createElement('article');
       card.className = 'routing-stop-card';
       if (global.appState?.roteirizacao?.paradaSelecionadaId === p.id) card.classList.add('is-selected');
@@ -505,9 +641,11 @@
 
       const avisos = resultado.erros?.length ? ` ${resultado.erros.length} linha(s) foram ignoradas por problema de dados.` : '';
       definirStatusImportacao(`${rotaAtual.paradas.length} parada(s) importada(s) da aba “${resultado.sheetName || 'Planilha'}”.${avisos}`, resultado.erros?.length ? 'warning' : 'success');
+      definirEstadoPainel('expanded');
 
       if (!workerConfigurado() || !global.PacoteEMatoGeocodificacao?.endpointAtual?.()) {
-        definirStatusImportacao(`${rotaAtual.paradas.length} parada(s) importada(s). Configure o Cloudflare Worker em Configurações para localizar endereços e otimizar a rota.`, 'warning');
+        definirStatusImportacao(`${rotaAtual.paradas.length} parada(s) importada(s). A localização automática e a otimização por ruas dependem do serviço externo, que ficará para uma etapa futura. Revise as paradas importadas pela lista.`, 'warning');
+        definirEstadoPainel('expanded');
         return;
       }
 
@@ -590,7 +728,7 @@
     if (btn) btn.disabled = true;
     try {
       if (!global.PacoteEMatoGeocodificacao?.endpointAtual?.()) {
-        throw new Error('Serviço de geocodificação não configurado. Abra Configurações e informe a URL do Cloudflare Worker.');
+        throw new Error('Localização automática indisponível nesta versão sem o serviço externo. Nenhuma coordenada será inventada.');
       }
       if (!opcoes?.silencioso) definirStatusImportacao('Validando endereços...', null);
       const resumoGeo = await global.PacoteEMatoGeocodificacao.geocodificarParadas(rotaAtual.paradas);
@@ -682,8 +820,8 @@
   async function otimizarRota() {
     if (!rotaAtual) return;
     if (!workerConfigurado() || !global.PacoteEMatoServicoRota?.endpoint?.('optimize')) {
-      const msg = 'Serviço de otimização não configurado. Abra Configurações, informe a URL do Cloudflare Worker e teste a conexão.';
-      definirStatusImportacao(msg, 'error');
+      const msg = 'Otimização por ruas depende do serviço externo, que não será configurado nesta etapa. A rota não será simulada.';
+      definirStatusImportacao(msg, 'warning');
       return notificar(msg);
     }
     const btn = $('routingOptimizeBtn');
@@ -979,31 +1117,36 @@
   }
 
   function abrirMobilePane(tipo) {
-    const root = $('routingWorkspace');
-    if (!root) return;
-    root.classList.toggle('show-list', tipo === 'lista');
-    root.classList.toggle('show-map', tipo !== 'lista');
-    $('routingMobileMapTab')?.classList.toggle('active', tipo !== 'lista');
-    $('routingMobileListTab')?.classList.toggle('active', tipo === 'lista');
-    if (tipo !== 'lista') setTimeout(() => global.PacoteEMatoMapa?.renderizar(), 80);
+    definirEstadoPainel(tipo === 'lista' ? 'expanded' : 'collapsed');
   }
 
   function bind() {
-    $('routingImportBtn')?.addEventListener('click', () => {
+    const abrirImportacao = () => {
+      fecharMenuAcoes();
       const input = $('routingXlsxInput');
       if (!input) return definirStatusImportacao('Seletor de planilha não encontrado. Recarregue a página.', 'error');
       input.click();
-    });
+    };
+    $('routingImportBtn')?.addEventListener('click', abrirImportacao);
+    $('routingEmptyImportBtn')?.addEventListener('click', abrirImportacao);
     $('routingXlsxInput')?.addEventListener('change', event => importarArquivo(event.target.files?.[0]));
-    $('routingUseLegacyBtn')?.addEventListener('click', usarRotaLegada);
-    $('routingAddStopBtn')?.addEventListener('click', () => abrirEditor(null));
-    $('routingGeocodeBtn')?.addEventListener('click', () => geocodificarTodas());
-    $('routingOptimizeBtn')?.addEventListener('click', otimizarRota);
-    $('routingInvertBtn')?.addEventListener('click', inverterRota);
-    $('routingExportPdfBtn')?.addEventListener('click', exportarPdf);
-    $('routingStartNavBtn')?.addEventListener('click', abrirNavegacao);
+    $('routingUseLegacyBtn')?.addEventListener('click', () => { fecharMenuAcoes(); usarRotaLegada(); });
+    $('routingAddStopBtn')?.addEventListener('click', () => { fecharMenuAcoes(); abrirEditor(null); });
+    $('routingGeocodeBtn')?.addEventListener('click', () => { fecharMenuAcoes(); geocodificarTodas(); });
+    $('routingOptimizeBtn')?.addEventListener('click', () => { fecharMenuAcoes(); otimizarRota(); });
+    $('routingInvertBtn')?.addEventListener('click', () => { fecharMenuAcoes(); inverterRota(); });
+    $('routingExportPdfBtn')?.addEventListener('click', () => { fecharMenuAcoes(); exportarPdf(); });
+    $('routingStartNavBtn')?.addEventListener('click', () => { fecharMenuAcoes(); abrirNavegacao(); });
     $('routingFitMapBtn')?.addEventListener('click', () => global.PacoteEMatoMapa?.ajustarTodos());
-    $('routingOpenSettingsBtn')?.addEventListener('click', () => global.PacoteEMatoAppShell?.abrirModulo?.('configuracoes'));
+    $('routingOpenSettingsBtn')?.addEventListener('click', () => { fecharMenuAcoes(); global.PacoteEMatoAppShell?.abrirModulo?.('configuracoes'); });
+    $('routingActionsBtn')?.addEventListener('click', abrirMenuAcoes);
+    $('routingActionsCloseBtn')?.addEventListener('click', fecharMenuAcoes);
+    $('routingActionsBackdrop')?.addEventListener('click', event => { if (event.target === $('routingActionsBackdrop')) fecharMenuAcoes(); });
+    $('routingSheetToggle')?.addEventListener('click', alternarPainel);
+    $('routingPrimaryActionBtn')?.addEventListener('click', executarAcaoPrincipal);
+    $('routingStopSearch')?.addEventListener('input', renderizarLista);
+    iniciarArrastePainel();
+
     $('routingSelectedStopEdit')?.addEventListener('click', () => {
       const id = global.appState?.roteirizacao?.paradaSelecionadaId;
       if (id) abrirEditor(id);
@@ -1014,8 +1157,10 @@
     $('routeKeepOrderBtn')?.addEventListener('click', () => concluirDecisaoReotimizacao('manter'));
     $('routeReoptBtn')?.addEventListener('click', () => concluirDecisaoReotimizacao('otimizar'));
     $('routingRouteName')?.addEventListener('change', alterarNomeRota);
-    $('routingMobileMapTab')?.addEventListener('click', () => abrirMobilePane('mapa'));
-    $('routingMobileListTab')?.addEventListener('click', () => abrirMobilePane('lista'));
+    $('routingRouteNameMirror')?.addEventListener('change', async () => {
+      if ($('routingRouteName')) $('routingRouteName').value = $('routingRouteNameMirror').value;
+      await alterarNomeRota();
+    });
 
     $('routeImportMappingClose')?.addEventListener('click', () => concluirMapeamentoImportacao(null));
     $('routeImportMappingCancel')?.addEventListener('click', () => concluirMapeamentoImportacao(null));
@@ -1027,16 +1172,22 @@
     });
 
     global.addEventListener('pemato:config:update', event => aplicarConfiguracoesNaRota(event.detail));
-    global.addEventListener('pemato:worker:update', () => renderizarPreferencias());
+    global.addEventListener('pemato:worker:update', () => { renderizarPreferencias(); atualizarDisponibilidadeAcoes(); atualizarAcaoPrincipal(); });
     global.addEventListener('pemato:geo:update', () => { renderizarResumo(); renderizarLista(); global.PacoteEMatoMapa?.renderizar(); });
     global.addEventListener('pemato:geo:progress', () => renderizarResumo());
     global.addEventListener('pemato:rota:salva', e => {
       if (e.detail?.rota?.id === rotaAtual?.id) global.PacoteEMatoAppShell?.atualizarInicio?.();
     });
+    global.addEventListener('resize', () => {
+      if (!ambienteMobile()) definirEstadoPainel('expanded');
+      else if (!['expanded','collapsed'].includes(estadoPainel)) definirEstadoPainel('collapsed');
+      setTimeout(() => global.PacoteEMatoMapa?.renderizar?.(), 80);
+    });
   }
 
   function iniciar() {
     bind();
+    definirEstadoPainel(ambienteMobile() ? 'collapsed' : 'expanded');
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar, { once: true });

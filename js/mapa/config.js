@@ -18,6 +18,19 @@
   const cfg = global.PEMATO_MAP_CONFIG = Object.assign({
     // OpenFreeMap Liberty: mapa 2D colorido, legível e com nomes de vias.
     mapStyleUrl: 'https://tiles.openfreemap.org/styles/liberty',
+    // Fallback sem chave para evitar tela vazia caso o estilo vetorial não carregue.
+    fallbackMapStyle: {
+      version: 8,
+      sources: {
+        osm: {
+          type: 'raster',
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors'
+        }
+      },
+      layers: [{ id: 'osm-raster', type: 'raster', source: 'osm' }]
+    },
     workerBaseUrl: inicial,
     geocodingEndpoint: '',
     optimizeEndpoint: '',

@@ -64,7 +64,12 @@
 
     const worker = global.PacoteEMatoMapaConfig?.obterWorkerBaseUrl?.() || String(global.PEMATO_MAP_CONFIG?.workerBaseUrl || '');
     if ($('settingsWorkerUrl') && document.activeElement !== $('settingsWorkerUrl')) $('settingsWorkerUrl').value = worker;
-    if (!worker) status($('settingsWorkerStatus'), 'Worker ainda não configurado. Geocodificação e otimização ficarão indisponíveis.', 'warning');
+    if (!worker && $('settingsGeocodeStartBtn')) {
+      $('settingsGeocodeStartBtn').style.display = 'none';
+      status($('settingsStartStatus'), 'Use sua localização atual. A validação de endereço dependerá do serviço externo em uma etapa futura.', 'warning');
+    } else if ($('settingsGeocodeStartBtn')) {
+      $('settingsGeocodeStartBtn').style.display = '';
+    }
   }
 
   async function validarEnderecoPartida() {
@@ -77,7 +82,7 @@
     try {
       if (!global.PacoteEMatoGeocodificacao) throw new Error('Módulo de geocodificação não carregado.');
       const p = await global.PacoteEMatoGeocodificacao.geocodificarEnderecoLivre(texto);
-      if (p.statusGeocodificacao === 'nao_configurado') throw new Error('Configure e teste o Cloudflare Worker antes de validar endereços.');
+      if (p.statusGeocodificacao === 'nao_configurado') throw new Error('Validação por endereço indisponível nesta versão sem o serviço externo. Use a localização atual.');
       if (p.statusGeocodificacao !== 'ok') throw new Error('O endereço não pôde ser localizado com confiança. Revise o endereço e tente novamente.');
       const pontoInicial = { tipo: 'endereco', descricao: texto, lat: p.latitude, lon: p.longitude, status: 'ok' };
       salvar({ pontoInicial });
@@ -156,8 +161,8 @@
       pontoInicial = null;
       if (textoPonto) status($('settingsStartStatus'), 'Endereço alterado. Clique em “Validar endereço” antes de usar este ponto.', 'warning');
     }
-    const worker = String($('settingsWorkerUrl')?.value || '').trim();
-    global.PacoteEMatoMapaConfig?.configurarWorkerBaseUrl?.(worker);
+    const workerField = $('settingsWorkerUrl');
+    if (workerField) global.PacoteEMatoMapaConfig?.configurarWorkerBaseUrl?.(String(workerField.value || '').trim());
     salvar({ navegacao, veiculo, tempoParadaSegundos, retornarAoInicio, pontoInicial });
     if (typeof global.notificar === 'function') global.notificar('Configurações salvas e aplicadas à rota ativa.');
   }

@@ -25,6 +25,7 @@
 
   async function abrirModulo(nome) {
     if (!modulos.includes(nome)) nome = 'inicio';
+    document.body.dataset.pematoModule = nome;
     modulos.forEach(m => {
       const el = $(idModulo(m));
       if (el) el.style.display = m === nome ? '' : 'none';

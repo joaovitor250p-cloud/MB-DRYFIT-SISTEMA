@@ -8,6 +8,7 @@
   let fitFeito = false;
   let loadTimer = null;
   let resizeObserver = null;
+  let fallbackBaseAtivo = false;
   const SOURCE_ROUTE = 'pemato-route-line';
   const LAYER_ROUTE = 'pemato-route-line-layer';
   const LAYER_ROUTE_CASE = 'pemato-route-line-case';
@@ -28,6 +29,12 @@
 
   function pontoValido(p) {
     return valorCoordenadaValido(p?.lat, -90, 90) && valorCoordenadaValido(p?.lon, -180, 180);
+  }
+
+
+  function geometriaValida(geometry) {
+    if (!geometry || geometry.type !== 'LineString' || !Array.isArray(geometry.coordinates) || geometry.coordinates.length < 2) return false;
+    return geometry.coordinates.every(c => Array.isArray(c) && c.length >= 2 && valorCoordenadaValido(c[1], -90, 90) && valorCoordenadaValido(c[0], -180, 180));
   }
 
   function ordem(p) {
@@ -73,6 +80,23 @@
     try { resizeObserver.observe(container); } catch (_) {}
   }
 
+  function ativarMapaBaseFallback() {
+    if (!mapa || fallbackBaseAtivo || !cfg().fallbackMapStyle) return false;
+    fallbackBaseAtivo = true;
+    try {
+      mapa.setStyle(cfg().fallbackMapStyle);
+      ocultarFallback();
+      clearTimeout(loadTimer);
+      loadTimer = setTimeout(() => {
+        if (!pronto) mostrarFallback('O mapa base não respondeu. Verifique sua conexão. A lista de paradas continua disponível.');
+      }, 10000);
+      return true;
+    } catch (erro) {
+      console.warn('Pacote É Mato: não foi possível ativar o mapa base de contingência.', erro);
+      return false;
+    }
+  }
+
   function garantirMapa() {
     if (mapa) return mapa;
     const container = document.getElementById('mapaRoteirizacao');
@@ -106,12 +130,7 @@
         fitBoundsOptions: { maxZoom: 16 }
       }), 'top-right');
 
-      clearTimeout(loadTimer);
-      loadTimer = setTimeout(() => {
-        if (!pronto) mostrarFallback('O mapa base não respondeu. Verifique a conexão com tiles.openfreemap.org ou bloqueios de rede do navegador. A lista de paradas continua funcionando.');
-      }, 15000);
-
-      mapa.on('load', () => {
+      const mapaPronto = () => {
         pronto = true;
         clearTimeout(loadTimer);
         if (state()) state().mapaDisponivel = true;
@@ -120,12 +139,24 @@
         garantirCamadaRota();
         try { mapa.resize(); } catch (_) {}
         renderizar({ fit: !fitFeito });
-      });
+      };
+
+      clearTimeout(loadTimer);
+      loadTimer = setTimeout(() => {
+        if (!pronto && !ativarMapaBaseFallback()) {
+          mostrarFallback('O mapa base não respondeu. Verifique sua conexão. A lista de paradas continua disponível.');
+        }
+      }, 8500);
+
+      mapa.on('load', mapaPronto);
+      mapa.on('style.load', mapaPronto);
       mapa.on('error', event => {
         const mensagem = event?.error?.message || String(event?.error || '');
         console.warn('Pacote É Mato: falha no mapa.', mensagem);
-        if (!pronto) {
-          mostrarFallback('Não foi possível carregar as ruas do mapa. Verifique sua conexão e se tiles.openfreemap.org está acessível.');
+        if (!pronto && !fallbackBaseAtivo) {
+          setTimeout(() => { if (!pronto) ativarMapaBaseFallback(); }, 600);
+        } else if (!pronto && fallbackBaseAtivo) {
+          mostrarFallback('Não foi possível carregar as ruas do mapa. Verifique a conexão de internet. A lista de paradas continua funcionando.');
         }
       });
     } catch (erro) {
@@ -179,7 +210,7 @@
     const geometry = state()?.geometria;
     const source = mapa.getSource(SOURCE_ROUTE);
     if (!source) return;
-    const feature = geometry ? { type: 'Feature', properties: {}, geometry } : null;
+    const feature = geometriaValida(geometry) ? { type: 'Feature', properties: {}, geometry } : null;
     source.setData({ type: 'FeatureCollection', features: feature ? [feature] : [] });
   }
 
@@ -303,6 +334,7 @@
     mapa = null;
     pronto = false;
     fitFeito = false;
+    fallbackBaseAtivo = false;
   }
 
   global.PacoteEMatoMapa = Object.freeze({
