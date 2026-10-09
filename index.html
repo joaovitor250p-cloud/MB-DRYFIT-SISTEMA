@@ -25,7 +25,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <!-- Firebase SDKs -->
@@ -786,100 +786,102 @@
     </div>
   </main>
 
-  <main id="moduloRoteirizacao" class="pemato-module" style="display:none;">
-    <div class="module-head">
-      <div>
-        <div class="module-kicker">Planejamento</div>
-        <h1 class="module-title">Roteirização</h1>
-        <p class="module-copy">Importe ou crie paradas, valide coordenadas e calcule uma ordem eficiente usando a rede viária real.</p>
-      </div>
-    </div>
-
-    <div class="routing-toolbar">
-      <button id="routingImportBtn" class="pemato-primary" type="button">Importar XLSX</button>
-      <input id="routingXlsxInput" type="file" accept=".xlsx,.xls,.csv" hidden>
-      <button id="routingUseLegacyBtn" class="pemato-secondary" type="button">Usar rota da Bipagem</button>
-      <button id="routingAddStopBtn" class="pemato-secondary" type="button">Adicionar parada</button>
-    </div>
-    <div id="routingImportStatus" class="routing-import-status">A planilha pode conter endereço, número, complemento, observação e códigos de pacote.</div>
-
-    <section class="routing-config">
-      <div class="routing-config-group">
-        <label>Ponto de partida</label>
-        <div class="routing-start-row">
-          <input id="routingStartAddress" class="pemato-field" type="text" placeholder="Endereço de partida">
-          <button id="routingLocateStartBtn" class="pemato-secondary" type="button">Localizar</button>
-          <button id="routingUseLocationBtn" class="pemato-secondary" type="button">Minha localização</button>
-          <button id="routingUseSavedStartBtn" class="pemato-secondary" type="button">Usar salvo</button>
-          <button id="routingSaveStartBtn" class="pemato-secondary" type="button">Salvar ponto</button>
+  <main id="moduloRoteirizacao" class="pemato-module routing-module" style="display:none;">
+    <header class="routing-page-header">
+      <div class="routing-page-title">
+        <div class="module-kicker">Planejamento da operação</div>
+        <div class="routing-title-row">
+          <div>
+            <h1 class="module-title">Roteirização</h1>
+            <p class="module-copy">Importe as paradas, valide os endereços e calcule a rota pelas ruas antes de iniciar a operação.</p>
+          </div>
+          <div class="routing-route-name-wrap">
+            <label for="routingRouteName">Nome da rota</label>
+            <input id="routingRouteName" class="pemato-field" type="text" placeholder="Rota de hoje">
+          </div>
         </div>
-        <div id="routingStartStatus" class="routing-start-status">Defina o ponto de partida</div>
       </div>
-      <div class="routing-config-group">
-        <label>Veículo</label>
-        <select id="routingVehicle" class="pemato-field"><option value="carro">Carro</option><option value="moto">Moto</option><option value="caminhao">Caminhão</option></select>
-      </div>
-      <div class="routing-config-group">
-        <label>Tempo médio por parada</label>
-        <input id="routingStopMinutes" class="pemato-field" type="number" min="0" max="180" step="1" value="3">
-      </div>
-      <div class="routing-config-group">
-        <label>Retorno</label>
-        <label style="display:flex;align-items:center;gap:7px;min-height:42px;color:var(--text-main);text-transform:none"><input id="routingReturnStart" type="checkbox"> Voltar ao início</label>
-      </div>
-      <div class="routing-config-group" style="grid-column:1/-1">
-        <label>Nome da rota</label>
-        <input id="routingRouteName" class="pemato-field" type="text" placeholder="Rota de hoje">
-      </div>
-    </section>
 
-    <div class="route-metrics-strip">
-      <div class="route-metric-box"><strong id="routeMetricStops">0</strong><span>Paradas</span></div>
-      <div class="route-metric-box"><strong id="routeMetricDistance">—</strong><span>Distância</span></div>
-      <div class="route-metric-box"><strong id="routeMetricDrive">—</strong><span>Direção</span></div>
-      <div class="route-metric-box"><strong id="routeMetricStopTime">—</strong><span>Nas paradas</span></div>
-      <div class="route-metric-box"><strong id="routeMetricTotal">—</strong><span>Total</span></div>
-      <div class="route-metric-box"><strong id="routeMetricEnd">—</strong><span>Previsão de término</span></div>
+      <div class="routing-preferences-bar" aria-label="Preferências aplicadas à rota">
+        <div class="routing-pref"><span>Veículo</span><strong id="routingPrefsVehicle">Carro</strong></div>
+        <div class="routing-pref"><span>Tempo por parada</span><strong id="routingPrefsStopTime">3 min</strong></div>
+        <div class="routing-pref routing-pref-wide"><span>Ponto de partida</span><strong id="routingPrefsStart">Não definido</strong></div>
+        <div class="routing-pref"><span>Serviço de rota</span><strong id="routingServiceStatus">Não configurado</strong></div>
+        <button id="routingOpenSettingsBtn" class="pemato-secondary routing-settings-link" type="button">Abrir configurações</button>
+      </div>
+    </header>
+
+    <div class="routing-commandbar">
+      <div class="routing-command-group routing-command-primary">
+        <button id="routingImportBtn" class="pemato-primary" type="button">Importar XLSX</button>
+        <input id="routingXlsxInput" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
+        <button id="routingAddStopBtn" class="pemato-secondary" type="button">Adicionar parada</button>
+        <button id="routingGeocodeBtn" class="pemato-secondary" type="button">Validar endereços</button>
+      </div>
+      <div class="routing-command-group routing-command-route">
+        <button id="routingOptimizeBtn" class="pemato-primary" type="button">Otimizar rota</button>
+        <button id="routingInvertBtn" class="pemato-secondary" type="button">Inverter</button>
+        <button id="routingExportPdfBtn" class="pemato-secondary" type="button">Exportar PDF</button>
+        <button id="routingStartNavBtn" class="pemato-primary" type="button">Iniciar rota</button>
+      </div>
+      <div class="routing-command-group routing-command-legacy">
+        <button id="routingUseLegacyBtn" class="pemato-tertiary" type="button">Usar rota da Bipagem</button>
+      </div>
     </div>
+
+    <div id="routingImportStatus" class="routing-import-status" role="status" aria-live="polite">
+      Importe um XLSX com endereços para iniciar. Se os nomes das colunas forem diferentes, o sistema solicitará o mapeamento.
+    </div>
+
+    <section class="routing-summary-bar" aria-label="Resumo da rota">
+      <div class="route-summary-item"><span>Paradas</span><strong id="routeMetricStops">0</strong></div>
+      <div class="route-summary-item"><span>Localizadas</span><strong id="routingLocatedCount">0</strong></div>
+      <div class="route-summary-item"><span>Corrigir</span><strong id="routingProblemCount">0</strong></div>
+      <div class="route-summary-item"><span>Distância</span><strong id="routeMetricDistance">—</strong></div>
+      <div class="route-summary-item"><span>Direção</span><strong id="routeMetricDrive">—</strong></div>
+      <div class="route-summary-item"><span>Paradas</span><strong id="routeMetricStopTime">—</strong></div>
+      <div class="route-summary-item"><span>Total</span><strong id="routeMetricTotal">—</strong></div>
+      <div class="route-summary-item"><span>Término</span><strong id="routeMetricEnd">—</strong></div>
+    </section>
 
     <section id="routingWorkspace" class="routing-workspace show-map">
-      <div class="routing-head">
-        <div><strong>Mapa e paradas</strong><div id="routingOptimizedFlag" class="routing-optimized-flag">Rota em planejamento</div></div>
-        <div class="routing-mobile-switch"><button id="routingMobileMapTab" class="active" type="button">Mapa</button><button id="routingMobileListTab" type="button">Paradas</button></div>
-      </div>
-      <div class="routing-body">
-        <aside class="routing-list-pane">
-          <div class="routing-list-summary">
-            <div><strong id="routingImportedCount">0</strong><span>Importadas</span></div>
-            <div><strong id="routingLocatedCount">0</strong><span>Localizadas</span></div>
-            <div><strong id="routingProblemCount">0</strong><span>Precisam correção</span></div>
+      <aside class="routing-list-pane">
+        <div class="routing-list-head">
+          <div>
+            <strong>Paradas</strong>
+            <span><b id="routingImportedCount">0</b> importadas</span>
           </div>
-          <div id="routePlannerStops" class="routing-stop-list"></div>
-        </aside>
-        <div class="routing-map-pane">
-          <div class="routing-map-tools"><button id="routingFitMapBtn" type="button">Ver todas</button></div>
-          <div id="mapaRoteirizacao"></div>
-          <div id="mapaRoteirizacaoFallback" class="route-map-fallback"></div>
-          <aside id="routingSelectedStopCard" class="routing-selected-stop" style="display:none">
-            <div class="routing-selected-stop-order" id="routingSelectedStopOrder">1</div>
-            <div class="routing-selected-stop-body">
-              <strong id="routingSelectedStopAddress">Parada selecionada</strong>
-              <span id="routingSelectedStopComplement"></span>
-              <small id="routingSelectedStopMeta"></small>
-            </div>
-            <button id="routingSelectedStopEdit" class="pemato-secondary" type="button">Editar</button>
-          </aside>
+          <div class="routing-mobile-switch">
+            <button id="routingMobileMapTab" class="active" type="button">Mapa</button>
+            <button id="routingMobileListTab" type="button">Paradas</button>
+          </div>
         </div>
+        <div id="routePlannerStops" class="routing-stop-list"></div>
+      </aside>
+
+      <div class="routing-map-pane">
+        <div class="routing-map-topbar">
+          <div>
+            <strong id="routingMapTitle">Mapa da rota</strong>
+            <span id="routingOptimizedFlag" class="routing-optimized-flag">Rota em planejamento</span>
+          </div>
+          <div class="routing-map-tools">
+            <button id="routingFitMapBtn" type="button">Ver todas</button>
+          </div>
+        </div>
+        <div id="mapaRoteirizacao"></div>
+        <div id="mapaRoteirizacaoFallback" class="route-map-fallback"></div>
+        <aside id="routingSelectedStopCard" class="routing-selected-stop" style="display:none">
+          <div class="routing-selected-stop-order" id="routingSelectedStopOrder">1</div>
+          <div class="routing-selected-stop-body">
+            <strong id="routingSelectedStopAddress">Parada selecionada</strong>
+            <span id="routingSelectedStopComplement"></span>
+            <small id="routingSelectedStopMeta"></small>
+          </div>
+          <button id="routingSelectedStopEdit" class="pemato-secondary" type="button">Editar parada</button>
+        </aside>
       </div>
     </section>
-
-    <div class="routing-actions-bottom">
-      <button id="routingGeocodeBtn" class="pemato-secondary" type="button">Validar endereços</button>
-      <button id="routingOptimizeBtn" class="pemato-primary" type="button">Otimizar rota</button>
-      <button id="routingInvertBtn" class="pemato-secondary" type="button">Inverter rota</button>
-      <button id="routingExportPdfBtn" class="pemato-secondary" type="button">Exportar PDF</button>
-      <button id="routingStartNavBtn" class="pemato-primary" type="button">Iniciar navegação</button>
-    </div>
   </main>
 
   <main id="moduloNavegacao" class="pemato-module" style="display:none;">
@@ -903,18 +905,70 @@
   </main>
 
   <main id="moduloConfiguracoes" class="pemato-module" style="display:none;">
-    <div class="module-head"><div><div class="module-kicker">Preferências</div><h1 class="module-title">Configurações</h1><p class="module-copy">Preferências operacionais que podem ser reutilizadas nas próximas rotas.</p></div></div>
-    <div class="settings-grid">
-      <section class="settings-card"><label>Navegação padrão</label><select id="settingsNavigation" class="pemato-field"><option value="pacote_emato">Pacote É Mato</option><option value="waze">Waze</option><option value="google">Google Maps</option></select></section>
-      <section class="settings-card"><label>Veículo</label><select id="settingsVehicle" class="pemato-field"><option value="carro">Carro</option><option value="moto">Moto</option><option value="caminhao">Caminhão</option></select></section>
-      <section class="settings-card"><label>Tempo médio por parada (minutos)</label><input id="settingsStopMinutes" class="pemato-field" type="number" min="0" max="180" value="3"></section>
-      <section class="settings-card"><label>Ponto inicial salvo</label><input id="settingsStartPoint" class="pemato-field" type="text" readonly placeholder="Defina pela Roteirização"></section>
-      <section class="settings-card"><label>Tema</label><div class="segmented-control-grid3"><button class="segmented-btn active" id="theme_black_Preto" onclick="mudarTema('black_Preto')">Preto</button><button class="segmented-btn" id="theme_Branco" onclick="mudarTema('Branco')">Branco</button><button class="segmented-btn" id="theme_gray" onclick="mudarTema('gray')">Cinza</button></div></section>
-      <section class="settings-card"><label>Voz</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px"><button class="segmented-btn active" id="voice_navegacao_feminina" onclick="salvarVoz('navegacao_feminina', true)">Navegação</button><button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo', false)">Silencioso</button></div></section>
+    <div class="module-head">
+      <div>
+        <div class="module-kicker">Preferências operacionais</div>
+        <h1 class="module-title">Configurações</h1>
+        <p class="module-copy">Estas preferências são salvas e aplicadas de verdade às novas rotas e à rota ativa quando houver alteração.</p>
+      </div>
     </div>
-    <div style="margin-top:12px"><button id="settingsSaveBtn" class="pemato-primary" type="button">Salvar configurações</button></div>
-  </main>
 
+    <div class="settings-grid settings-grid-professional">
+      <section class="settings-card">
+        <div class="settings-card-head"><strong>Navegação</strong><span>Aplicativo usado ao iniciar o deslocamento</span></div>
+        <label for="settingsNavigation">Navegação preferida</label>
+        <select id="settingsNavigation" class="pemato-field"><option value="pacote_emato">Pacote É Mato</option><option value="waze">Waze</option><option value="google">Google Maps</option></select>
+      </section>
+
+      <section class="settings-card">
+        <div class="settings-card-head"><strong>Veículo</strong><span>Perfil usado pelo serviço de roteamento</span></div>
+        <label for="settingsVehicle">Tipo de veículo</label>
+        <select id="settingsVehicle" class="pemato-field"><option value="carro">Carro</option><option value="moto">Moto</option><option value="caminhao">Caminhão</option></select>
+      </section>
+
+      <section class="settings-card">
+        <div class="settings-card-head"><strong>Tempo nas paradas</strong><span>Entra no cálculo do tempo total estimado</span></div>
+        <label for="settingsStopMinutes">Tempo médio por parada (minutos)</label>
+        <input id="settingsStopMinutes" class="pemato-field" type="number" min="0" max="180" step="1" value="3">
+        <label class="settings-check"><input id="settingsReturnStart" type="checkbox"> Retornar ao ponto inicial ao finalizar a rota</label>
+      </section>
+
+      <section class="settings-card settings-card-wide">
+        <div class="settings-card-head"><strong>Ponto de partida</strong><span>Use um endereço validado ou a localização atual</span></div>
+        <label for="settingsStartPoint">Endereço de partida</label>
+        <div class="settings-start-row">
+          <input id="settingsStartPoint" class="pemato-field" type="text" placeholder="Ex.: Rua Exemplo, 100, São Paulo - SP">
+          <button id="settingsGeocodeStartBtn" class="pemato-secondary" type="button">Validar endereço</button>
+          <button id="settingsUseGpsStartBtn" class="pemato-secondary" type="button">Usar minha localização</button>
+          <button id="settingsClearStartBtn" class="pemato-tertiary" type="button">Limpar</button>
+        </div>
+        <div id="settingsStartStatus" class="settings-inline-status">Nenhum ponto validado.</div>
+      </section>
+
+      <section class="settings-card settings-card-wide">
+        <div class="settings-card-head"><strong>Serviço de mapa e rota</strong><span>O endereço do Worker não é secreto; a chave Geoapify permanece somente no Cloudflare</span></div>
+        <label for="settingsWorkerUrl">URL base do Cloudflare Worker</label>
+        <div class="settings-worker-row">
+          <input id="settingsWorkerUrl" class="pemato-field" type="url" placeholder="https://seu-worker.workers.dev">
+          <button id="settingsWorkerTestBtn" class="pemato-secondary" type="button">Testar conexão</button>
+        </div>
+        <div id="settingsWorkerStatus" class="settings-inline-status">Worker ainda não configurado.</div>
+      </section>
+
+      <section class="settings-card">
+        <div class="settings-card-head"><strong>Aparência</strong><span>Tema da interface</span></div>
+        <label>Tema</label>
+        <div class="segmented-control-grid3"><button class="segmented-btn active" id="theme_black_Preto" onclick="mudarTema('black_Preto')">Preto</button><button class="segmented-btn" id="theme_Branco" onclick="mudarTema('Branco')">Branco</button><button class="segmented-btn" id="theme_gray" onclick="mudarTema('gray')">Cinza</button></div>
+      </section>
+
+      <section class="settings-card">
+        <div class="settings-card-head"><strong>Voz</strong><span>Feedback sonoro do aplicativo</span></div>
+        <label>Voz do sistema</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px"><button class="segmented-btn active" id="voice_navegacao_feminina" onclick="salvarVoz('navegacao_feminina', true)">Navegação</button><button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo', false)">Silencioso</button></div>
+      </section>
+    </div>
+    <div class="settings-save-row"><button id="settingsSaveBtn" class="pemato-primary" type="button">Salvar configurações</button></div>
+  </main>
 
   <div class="container pemato-module" id="moduloBipagem" style="display:none;">
     <!-- BANNER DE AVISO GERAL (BROADCAST) COM ANIMAÇÃO -->
@@ -1069,6 +1123,31 @@
       </div>
 
       <input type="text" class="input-auth" id="inputManual" placeholder="Digite o código manualmente..." style="margin-bottom:8px; font-size:0.82rem; padding:10px 12px;" onchange="processarCodigo(this.value)" data-i18n-placeholder="manual_placeholder">
+    </div>
+  </div>
+
+  <div id="routeImportMappingModal" class="modal-backdrop" style="display:none;z-index:12200">
+    <div class="route-import-modal-card" role="dialog" aria-modal="true" aria-labelledby="routeImportMappingTitle">
+      <div class="route-editor-modal-head">
+        <div><div class="module-kicker">Importação de planilha</div><h3 id="routeImportMappingTitle">Associar colunas</h3></div>
+        <button id="routeImportMappingClose" class="route-editor-close" type="button" aria-label="Fechar">×</button>
+      </div>
+      <p class="route-import-explainer">Não foi possível identificar automaticamente todas as colunas necessárias. Escolha onde estão os dados da rota; nenhum endereço será inventado.</p>
+      <div class="route-import-meta"><strong id="routeImportFileName">Planilha</strong><span id="routeImportSheetInfo"></span></div>
+      <div class="route-import-header-row">
+        <label for="routeImportHeaderRow">Linha de cabeçalho</label>
+        <select id="routeImportHeaderRow" class="pemato-field"></select>
+      </div>
+      <div id="routeImportMappingFields" class="route-import-mapping-grid"></div>
+      <div class="route-import-preview-wrap">
+        <div class="route-import-preview-title">Pré-visualização</div>
+        <div class="route-import-preview-scroll"><table id="routeImportPreview" class="route-import-preview"></table></div>
+      </div>
+      <div id="routeImportMappingError" class="route-import-error" style="display:none"></div>
+      <div class="route-editor-footer">
+        <button id="routeImportMappingCancel" class="pemato-secondary" type="button">Cancelar</button>
+        <button id="routeImportMappingConfirm" class="pemato-primary" type="button">Importar com estas colunas</button>
+      </div>
     </div>
   </div>
 

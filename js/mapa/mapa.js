@@ -6,15 +6,28 @@
   let marcadores = new Map();
   let marcadorPartida = null;
   let fitFeito = false;
+  let loadTimer = null;
+  let resizeObserver = null;
   const SOURCE_ROUTE = 'pemato-route-line';
   const LAYER_ROUTE = 'pemato-route-line-layer';
+  const LAYER_ROUTE_CASE = 'pemato-route-line-case';
 
   function cfg() { return global.PEMATO_MAP_CONFIG || {}; }
   function state() { return global.appState?.roteirizacao || null; }
   function paradas() { return Array.isArray(state()?.paradas) ? state().paradas : []; }
 
+  function valorCoordenadaValido(v, minimo, maximo) {
+    if (v === null || v === undefined || String(v).trim() === '') return false;
+    const n = Number(v);
+    return Number.isFinite(n) && n >= minimo && n <= maximo;
+  }
+
   function coordenadaValida(p) {
-    return Number.isFinite(Number(p?.latitude)) && Number.isFinite(Number(p?.longitude));
+    return valorCoordenadaValido(p?.latitude, -90, 90) && valorCoordenadaValido(p?.longitude, -180, 180);
+  }
+
+  function pontoValido(p) {
+    return valorCoordenadaValido(p?.lat, -90, 90) && valorCoordenadaValido(p?.lon, -180, 180);
   }
 
   function ordem(p) {
@@ -41,10 +54,30 @@
     if (el) el.style.display = 'none';
   }
 
+  function removerCamadas3D() {
+    if (!mapa || !pronto) return;
+    try {
+      const layers = mapa.getStyle()?.layers || [];
+      layers.filter(layer => layer.type === 'fill-extrusion').forEach(layer => {
+        try { mapa.setLayoutProperty(layer.id, 'visibility', 'none'); } catch (_) {}
+      });
+    } catch (_) {}
+  }
+
+  function observarTamanho(container) {
+    if (resizeObserver || typeof ResizeObserver !== 'function' || !container) return;
+    resizeObserver = new ResizeObserver(() => {
+      if (!mapa) return;
+      try { mapa.resize(); } catch (_) {}
+    });
+    try { resizeObserver.observe(container); } catch (_) {}
+  }
+
   function garantirMapa() {
     if (mapa) return mapa;
     const container = document.getElementById('mapaRoteirizacao');
     if (!container) return null;
+    observarTamanho(container);
     if (!global.maplibregl) {
       mostrarFallback('A biblioteca do mapa não carregou. A lista de paradas continua disponível.');
       return null;
@@ -61,7 +94,8 @@
         maxPitch: 0,
         dragRotate: false,
         touchPitch: false,
-        attributionControl: true
+        attributionControl: true,
+        fadeDuration: 120
       });
       mapa.touchZoomRotate.disableRotation();
       mapa.addControl(new global.maplibregl.NavigationControl({ showCompass: false }), 'top-right');
@@ -72,15 +106,27 @@
         fitBoundsOptions: { maxZoom: 16 }
       }), 'top-right');
 
+      clearTimeout(loadTimer);
+      loadTimer = setTimeout(() => {
+        if (!pronto) mostrarFallback('O mapa base não respondeu. Verifique a conexão com tiles.openfreemap.org ou bloqueios de rede do navegador. A lista de paradas continua funcionando.');
+      }, 15000);
+
       mapa.on('load', () => {
         pronto = true;
+        clearTimeout(loadTimer);
         if (state()) state().mapaDisponivel = true;
         ocultarFallback();
+        removerCamadas3D();
         garantirCamadaRota();
+        try { mapa.resize(); } catch (_) {}
         renderizar({ fit: !fitFeito });
       });
       mapa.on('error', event => {
-        if (!pronto) console.warn('Pacote É Mato: mapa não carregou.', event?.error?.message || event?.error || '');
+        const mensagem = event?.error?.message || String(event?.error || '');
+        console.warn('Pacote É Mato: falha no mapa.', mensagem);
+        if (!pronto) {
+          mostrarFallback('Não foi possível carregar as ruas do mapa. Verifique sua conexão e se tiles.openfreemap.org está acessível.');
+        }
       });
     } catch (erro) {
       console.error('Pacote É Mato: erro ao iniciar mapa.', erro);
@@ -98,6 +144,20 @@
         data: { type: 'FeatureCollection', features: [] }
       });
     }
+    const primeiroLabel = (mapa.getStyle()?.layers || []).find(layer => layer.type === 'symbol')?.id;
+    if (!mapa.getLayer(LAYER_ROUTE_CASE)) {
+      mapa.addLayer({
+        id: LAYER_ROUTE_CASE,
+        type: 'line',
+        source: SOURCE_ROUTE,
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: {
+          'line-color': '#ffffff',
+          'line-width': 8,
+          'line-opacity': 0.92
+        }
+      }, primeiroLabel);
+    }
     if (!mapa.getLayer(LAYER_ROUTE)) {
       mapa.addLayer({
         id: LAYER_ROUTE,
@@ -107,9 +167,9 @@
         paint: {
           'line-color': '#059669',
           'line-width': 5,
-          'line-opacity': 0.88
+          'line-opacity': 0.95
         }
-      });
+      }, primeiroLabel);
     }
   }
 
@@ -159,7 +219,7 @@
   function renderizarPartida() {
     if (!mapa || !pronto) return;
     const start = state()?.pontoInicial;
-    const valida = Number.isFinite(Number(start?.lat)) && Number.isFinite(Number(start?.lon));
+    const valida = pontoValido(start);
     if (!valida) {
       if (marcadorPartida) { try { marcadorPartida.remove(); } catch (_) {} marcadorPartida = null; }
       return;
@@ -204,10 +264,10 @@
     if (!mapa || !pronto) return;
     const validas = paradas().filter(coordenadaValida);
     const start = state()?.pontoInicial;
-    if (!validas.length && !(Number.isFinite(Number(start?.lat)) && Number.isFinite(Number(start?.lon)))) return;
+    if (!validas.length && !pontoValido(start)) return;
     const bounds = new global.maplibregl.LngLatBounds();
     validas.forEach(p => bounds.extend([Number(p.longitude), Number(p.latitude)]));
-    if (Number.isFinite(Number(start?.lat)) && Number.isFinite(Number(start?.lon))) bounds.extend([Number(start.lon), Number(start.lat)]);
+    if (pontoValido(start)) bounds.extend([Number(start.lon), Number(start.lat)]);
     try {
       mapa.fitBounds(bounds, { padding: { top: 70, right: 55, bottom: 80, left: 55 }, maxZoom: 16, duration: 550 });
       fitFeito = true;
@@ -236,6 +296,9 @@
     marcadores.forEach(item => { try { item.marker.remove(); } catch (_) {} });
     marcadores.clear();
     if (marcadorPartida) { try { marcadorPartida.remove(); } catch (_) {} marcadorPartida = null; }
+    clearTimeout(loadTimer);
+    loadTimer = null;
+    if (resizeObserver) { try { resizeObserver.disconnect(); } catch (_) {} resizeObserver = null; }
     if (mapa) { try { mapa.remove(); } catch (_) {} }
     mapa = null;
     pronto = false;

@@ -12,7 +12,7 @@ function corsHeaders(origin, allowed) {
   const headers = {
     'Vary': 'Origin',
     'Access-Control-Allow-Headers': 'Content-Type, X-Pacote-Em-Mato-Client',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Max-Age': '86400'
   };
   if (allowed) headers['Access-Control-Allow-Origin'] = origin;
@@ -64,6 +64,8 @@ function timeoutSignal(ms) {
 
 function isCoordinate(value) {
   if (!value || typeof value !== 'object') return false;
+  if (value.lat === null || value.lat === undefined || value.lon === null || value.lon === undefined) return false;
+  if (String(value.lat).trim() === '' || String(value.lon).trim() === '') return false;
   const lat = Number(value.lat);
   const lon = Number(value.lon);
   return Number.isFinite(lat) && lat >= -90 && lat <= 90 &&
@@ -86,9 +88,11 @@ function uniqueCoordinateCount(points) {
 
 function sanitizeResult(item) {
   const rank = item?.rank || {};
+  const lat = item?.lat === null || item?.lat === undefined || String(item?.lat).trim() === '' ? NaN : Number(item.lat);
+  const lon = item?.lon === null || item?.lon === undefined || String(item?.lon).trim() === '' ? NaN : Number(item.lon);
   return {
-    lat: Number(item?.lat),
-    lon: Number(item?.lon),
+    lat,
+    lon,
     formatted: String(item?.formatted || ''),
     address_line1: String(item?.address_line1 || ''),
     housenumber: String(item?.housenumber || ''),
@@ -365,6 +369,16 @@ export default {
     }
 
     if (!allowed) return json({ ok: false, error: 'origin_not_allowed' }, 403, origin, env);
+
+    // Health check não consome créditos do provedor e permite validar a instalação pelo app.
+    if (url.pathname === '/health' && request.method === 'GET') {
+      return json({
+        ok: true,
+        service: 'pacote-emato-routing',
+        providerConfigured: !!env.GEOAPIFY_API_KEY
+      }, 200, origin, env);
+    }
+
     if (request.method !== 'POST') return json({ ok: false, error: 'method_not_allowed' }, 405, origin, env);
     if (!checkRateLimit(request)) return json({ ok: false, error: 'rate_limited' }, 429, origin, env);
     if (!env.GEOAPIFY_API_KEY) return json({ ok: false, error: 'provider_not_configured' }, 503, origin, env);

@@ -1,24 +1,28 @@
 (function configurarMapaPacoteEMato(global) {
   'use strict';
 
+  const STORAGE_KEY = 'pemato_worker_base_url';
   const existente = global.PEMATO_MAP_CONFIG || {};
-  let workerBase = '';
-  try {
-    workerBase = String(
-      existente.workerBaseUrl ||
-      localStorage.getItem('pemato_worker_base_url') ||
-      ''
-    ).trim().replace(/\/+$/, '');
-  } catch (_) {
-    workerBase = String(existente.workerBaseUrl || '').trim().replace(/\/+$/, '');
+
+  function limparBase(url) {
+    return String(url || '').trim().replace(/\/+$/, '');
   }
 
-  global.PEMATO_MAP_CONFIG = Object.assign({
-    mapStyleUrl: 'https://tiles.openfreemap.org/styles/positron',
-    workerBaseUrl: workerBase,
-    geocodingEndpoint: workerBase ? workerBase + '/geocode' : '',
-    optimizeEndpoint: workerBase ? workerBase + '/optimize' : '',
-    routeEndpoint: workerBase ? workerBase + '/route' : '',
+  function baseSalva() {
+    try { return limparBase(localStorage.getItem(STORAGE_KEY) || ''); }
+    catch (_) { return ''; }
+  }
+
+  const inicial = limparBase(existente.workerBaseUrl || baseSalva());
+
+  const cfg = global.PEMATO_MAP_CONFIG = Object.assign({
+    // OpenFreeMap Liberty: mapa 2D colorido, legível e com nomes de vias.
+    mapStyleUrl: 'https://tiles.openfreemap.org/styles/liberty',
+    workerBaseUrl: inicial,
+    geocodingEndpoint: '',
+    optimizeEndpoint: '',
+    routeEndpoint: '',
+    healthEndpoint: '',
     geocodingProvider: 'geoapify-worker',
     geocodingRequestTimeoutMs: 12000,
     routingRequestTimeoutMs: 45000,
@@ -27,16 +31,42 @@
     geocodingNegativeCacheTtlMs: 24 * 60 * 60 * 1000,
     geocodingMinConfidence: 0.90,
     geocodingMinStreetConfidence: 0.90,
-    initialCenter: [-51.9253, -14.2350],
-    initialZoom: 3.4
+    initialCenter: [-46.6333, -23.5505],
+    initialZoom: 10
   }, existente);
 
-  // Se o Worker foi definido depois do objeto inicial, derive os endpoints sem expor secrets.
-  const cfg = global.PEMATO_MAP_CONFIG;
-  const base = String(cfg.workerBaseUrl || '').trim().replace(/\/+$/, '');
-  if (base) {
-    if (!cfg.geocodingEndpoint) cfg.geocodingEndpoint = base + '/geocode';
-    if (!cfg.optimizeEndpoint) cfg.optimizeEndpoint = base + '/optimize';
-    if (!cfg.routeEndpoint) cfg.routeEndpoint = base + '/route';
+  function derivarEndpoints(base) {
+    const b = limparBase(base);
+    cfg.workerBaseUrl = b;
+    cfg.geocodingEndpoint = b ? `${b}/geocode` : '';
+    cfg.optimizeEndpoint = b ? `${b}/optimize` : '';
+    cfg.routeEndpoint = b ? `${b}/route` : '';
+    cfg.healthEndpoint = b ? `${b}/health` : '';
+    return cfg;
   }
+
+  function configurarWorkerBaseUrl(url) {
+    const b = limparBase(url);
+    try {
+      if (b) localStorage.setItem(STORAGE_KEY, b);
+      else localStorage.removeItem(STORAGE_KEY);
+      // Limpa overrides antigos para não manter endpoints divergentes.
+      ['pemato_geocoding_endpoint', 'pemato_optimize_endpoint', 'pemato_route_endpoint'].forEach(k => localStorage.removeItem(k));
+    } catch (_) {}
+    derivarEndpoints(b);
+    try { global.dispatchEvent(new CustomEvent('pemato:worker:update', { detail: { workerBaseUrl: b } })); } catch (_) {}
+    return b;
+  }
+
+  function obterWorkerBaseUrl() {
+    return limparBase(cfg.workerBaseUrl || baseSalva());
+  }
+
+  derivarEndpoints(inicial);
+
+  global.PacoteEMatoMapaConfig = Object.freeze({
+    configurarWorkerBaseUrl,
+    obterWorkerBaseUrl,
+    derivarEndpoints
+  });
 })(window);

@@ -51,9 +51,13 @@
 
   function coord(p) {
     if (!p) return null;
-    const lat = Number(p.lat ?? p.latitude);
-    const lon = Number(p.lon ?? p.longitude);
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+    const latBruto = p.lat ?? p.latitude;
+    const lonBruto = p.lon ?? p.longitude;
+    if (latBruto === null || latBruto === undefined || String(latBruto).trim() === '') return null;
+    if (lonBruto === null || lonBruto === undefined || String(lonBruto).trim() === '') return null;
+    const lat = Number(latBruto);
+    const lon = Number(lonBruto);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
     return { lat, lon };
   }
 

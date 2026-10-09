@@ -31,6 +31,12 @@
     return Number.isFinite(n) ? n : fallback;
   }
 
+  function numeroCoordenada(v) {
+    if (v === null || v === undefined || String(v).trim() === '') return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  }
+
   function normalizarParada(parada, index) {
     const p = parada && typeof parada === 'object' ? clone(parada) : {};
     p.id = String(p.id || uuid('parada'));
@@ -56,8 +62,8 @@
       : [];
     p.quantidadePacotes = p.pacotes.length || numero(p.quantidadePacotes, 0);
     p.quantidadeBipada = p.pacotesBipados.length || Math.max(0, numero(p.quantidadeBipada, 0));
-    p.latitude = Number.isFinite(Number(p.latitude)) ? Number(p.latitude) : null;
-    p.longitude = Number.isFinite(Number(p.longitude)) ? Number(p.longitude) : null;
+    p.latitude = numeroCoordenada(p.latitude);
+    p.longitude = numeroCoordenada(p.longitude);
     p.statusGeocodificacao = String(p.statusGeocodificacao || 'pendente');
     p.confiabilidade = Number.isFinite(Number(p.confiabilidade)) ? Number(p.confiabilidade) : null;
     p.confiabilidadeRua = Number.isFinite(Number(p.confiabilidadeRua)) ? Number(p.confiabilidadeRua) : null;
@@ -79,14 +85,15 @@
 
   function normalizarPonto(ponto) {
     if (!ponto || typeof ponto !== 'object') return null;
-    const lat = Number(ponto.lat ?? ponto.latitude);
-    const lon = Number(ponto.lon ?? ponto.longitude);
+    const lat = numeroCoordenada(ponto.lat ?? ponto.latitude);
+    const lon = numeroCoordenada(ponto.lon ?? ponto.longitude);
+    const valido = lat !== null && lon !== null;
     return {
       tipo: String(ponto.tipo || 'coordenada'),
       descricao: String(ponto.descricao || ponto.endereco || ''),
-      lat: Number.isFinite(lat) ? lat : null,
-      lon: Number.isFinite(lon) ? lon : null,
-      status: String(ponto.status || (Number.isFinite(lat) && Number.isFinite(lon) ? 'ok' : 'pendente'))
+      lat,
+      lon,
+      status: String(ponto.status || (valido ? 'ok' : 'pendente'))
     };
   }
 

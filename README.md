@@ -1,6 +1,16 @@
-# Pacote É Mato — ETAPA 4 CORRIGIDA
+# Pacote É Mato — ETAPA 4 FINAL CORRIGIDA
 
 Evolução incremental do Pacote É Mato com Roteirização profissional separada da Bipagem.
+
+## Correções finais desta revisão
+
+- Importação XLSX possui leitor nativo, detecção de cabeçalho em várias linhas e mapeamento manual de colunas quando necessário.
+- A geocodificação passa a considerar corretamente o campo `numero` vindo do XLSX/manual.
+- Coordenadas `null` deixam de ser convertidas indevidamente para `0,0`; paradas sem coordenadas válidas não entram no mapa nem na otimização.
+- O mapa usa o estilo colorido `liberty` e ocupa a área principal da Roteirização no desktop, com alternância Mapa/Paradas no celular.
+- Veículo, tempo médio, ponto inicial e navegação ficam em Configurações e são aplicados à Rota Ativa.
+- O Worker pode ser configurado e testado pela própria tela de Configurações.
+- A preferência Pacote É Mato/Waze/Google Maps é respeitada ao iniciar a rota.
 
 O sistema legado continua responsável por login, Firebase, assinaturas, administração, leitura PDF, agrupamento físico de paradas, scanner, câmera, entrada manual, sons, TTS, histórico anterior, Waze e Google Maps. A nova arquitetura adiciona planejamento de rota sem substituir essas funções.
 
@@ -126,7 +136,7 @@ Sem ID de parada explícito, cada linha é tratada como uma parada e o sistema n
 ## Mapa
 
 - MapLibre GL JS 5.24.0.
-- Mapa base OpenFreeMap, estilo `positron`.
+- Mapa base OpenFreeMap, estilo `liberty`, com ruas e rótulos coloridos e legíveis.
 - Visualização 2D; rotação e pitch ficam desabilitados.
 - Um marcador representa uma parada, nunca um pacote individual.
 - A linha exibida vem da Routing API e segue as ruas reais.
@@ -255,16 +265,9 @@ https://pacote-emato-geocodificacao.<seu-subdominio>.workers.dev
 
 ### 6. Informar a URL ao frontend
 
-Depois do primeiro deploy, configure a base do Worker. `js/mapa/config.js` lê a chave local `pemato_worker_base_url`.
+Abra **Configurações → Serviço de rota / Worker**, cole a URL base retornada pelo deploy e clique em **Testar conexão**. O app salva essa URL localmente em `pemato_worker_base_url` e aplica os endpoints `/health`, `/geocode`, `/optimize` e `/route`.
 
-Para um teste imediato no navegador, no domínio do app:
-
-```javascript
-localStorage.setItem('pemato_worker_base_url', 'https://pacote-emato-geocodificacao.SEUSUBDOMINIO.workers.dev');
-location.reload();
-```
-
-Para produção, defina `workerBaseUrl` na configuração distribuída do projeto ou automatize essa configuração no processo de publicação. A URL do Worker não é secreta; somente `GEOAPIFY_API_KEY` é secreta.
+A URL do Worker não é secreta; somente `GEOAPIFY_API_KEY` é secreta.
 
 ## Firebase
 

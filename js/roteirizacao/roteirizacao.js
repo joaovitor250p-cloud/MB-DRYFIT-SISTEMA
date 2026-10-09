@@ -6,10 +6,23 @@
   let stopEmEdicao = null;
   let modoEdicaoNovo = false;
   let resolverDecisaoReotimizacao = null;
+  let importacaoPendente = null;
+  let resolverMapeamentoImportacao = null;
 
   function $(id) { return document.getElementById(id); }
   function clone(v) { return global.PacoteEMatoRotaStore?.clone?.(v) || JSON.parse(JSON.stringify(v)); }
   function agora() { return Date.now(); }
+
+  function coordenadaValida(lat, lon) {
+    if (lat === null || lat === undefined || lon === null || lon === undefined) return false;
+    if (String(lat).trim() === '' || String(lon).trim() === '') return false;
+    const a = Number(lat);
+    const o = Number(lon);
+    return Number.isFinite(a) && a >= -90 && a <= 90 && Number.isFinite(o) && o >= -180 && o <= 180;
+  }
+
+  function pontoValido(p) { return !!p && coordenadaValida(p.lat, p.lon); }
+  function paradaLocalizada(p) { return !!p && p.statusGeocodificacao === 'ok' && coordenadaValida(p.latitude, p.longitude); }
 
   function notificar(msg) {
     if (typeof global.notificar === 'function') global.notificar(msg);
@@ -135,12 +148,12 @@
 
   async function recalcularOrdemAtual() {
     if (!rotaAtual) return false;
-    if (!rotaAtual.pontoInicial || !Number.isFinite(Number(rotaAtual.pontoInicial.lat)) || !Number.isFinite(Number(rotaAtual.pontoInicial.lon))) {
+    if (!pontoValido(rotaAtual.pontoInicial)) {
       notificar('Defina um ponto de partida válido para recalcular a rota atual.');
       return false;
     }
     const semCoordenada = rotaAtual.paradas.filter(p => !['entregue', 'concluida', 'nao_entregue'].includes(p.statusEntrega) && (
-      p.statusGeocodificacao !== 'ok' || !Number.isFinite(Number(p.latitude)) || !Number.isFinite(Number(p.longitude))
+      !paradaLocalizada(p)
     ));
     if (semCoordenada.length) {
       notificar(`Existem ${semCoordenada.length} parada(s) sem localização válida.`);
@@ -202,10 +215,36 @@
     return lista;
   }
 
+  function workerConfigurado() {
+    return !!String(global.PEMATO_MAP_CONFIG?.workerBaseUrl || global.PacoteEMatoMapaConfig?.obterWorkerBaseUrl?.() || '').trim();
+  }
+
+  function definirStatusImportacao(texto, tom) {
+    const el = $('routingImportStatus');
+    if (!el) return;
+    el.textContent = texto || '';
+    if (tom) el.dataset.tone = tom;
+    else delete el.dataset.tone;
+  }
+
+  function renderizarPreferencias() {
+    if (!rotaAtual) return;
+    const veiculos = { carro: 'Carro', moto: 'Moto', caminhao: 'Caminhão' };
+    if ($('routingPrefsVehicle')) $('routingPrefsVehicle').textContent = veiculos[rotaAtual.veiculo] || 'Carro';
+    if ($('routingPrefsStopTime')) $('routingPrefsStopTime').textContent = `${Math.max(0, Math.round(Number(rotaAtual.tempoParadaSegundos || 0) / 60))} min`;
+    if ($('routingPrefsStart')) $('routingPrefsStart').textContent = rotaAtual.pontoInicial?.descricao || 'Não definido';
+    const service = $('routingServiceStatus');
+    if (service) {
+      const ok = workerConfigurado();
+      service.textContent = ok ? 'Configurado' : 'Não configurado';
+      service.dataset.status = ok ? 'ok' : 'warn';
+    }
+  }
+
   function renderizarResumo() {
     if (!rotaAtual) return;
     const total = rotaAtual.paradas.length;
-    const localizadas = rotaAtual.paradas.filter(p => p.statusGeocodificacao === 'ok' && Number.isFinite(Number(p.latitude)) && Number.isFinite(Number(p.longitude))).length;
+    const localizadas = rotaAtual.paradas.filter(p => paradaLocalizada(p)).length;
     const problemas = total - localizadas;
     if ($('routingImportedCount')) $('routingImportedCount').textContent = String(total);
     if ($('routingLocatedCount')) $('routingLocatedCount').textContent = String(localizadas);
@@ -216,24 +255,13 @@
     if ($('routeMetricStopTime')) $('routeMetricStopTime').textContent = formatarTempo(rotaAtual.duracaoParadasSegundos);
     if ($('routeMetricTotal')) $('routeMetricTotal').textContent = formatarTempo(rotaAtual.duracaoTotalSegundos);
     if ($('routeMetricEnd')) $('routeMetricEnd').textContent = horaLocal(rotaAtual.horarioTerminoEstimado);
-    if ($('routingRouteName')) $('routingRouteName').value = rotaAtual.nome || '';
-    if ($('routingVehicle')) $('routingVehicle').value = rotaAtual.veiculo || 'carro';
-    if ($('routingStopMinutes')) $('routingStopMinutes').value = String(Math.max(0, Math.round(Number(rotaAtual.tempoParadaSegundos || 0) / 60)));
-    if ($('routingReturnStart')) $('routingReturnStart').checked = rotaAtual.retornarAoInicio === true;
-    if ($('routingStartAddress')) $('routingStartAddress').value = rotaAtual.pontoInicial?.descricao || '';
-    const startStatus = $('routingStartStatus');
-    if (startStatus) {
-      const p = rotaAtual.pontoInicial;
-      startStatus.textContent = p && Number.isFinite(Number(p.lat)) && Number.isFinite(Number(p.lon))
-        ? 'Ponto de partida validado'
-        : 'Defina o ponto de partida';
-      startStatus.dataset.status = p?.status || 'pendente';
-    }
+    if ($('routingRouteName') && document.activeElement !== $('routingRouteName')) $('routingRouteName').value = rotaAtual.nome || '';
     const flag = $('routingOptimizedFlag');
     if (flag) {
       flag.textContent = rotaAtual.rotaOtimizada ? 'Rota otimizada e salva como ativa' : 'Rota em planejamento';
       flag.dataset.optimized = rotaAtual.rotaOtimizada ? 'true' : 'false';
     }
+    renderizarPreferencias();
   }
 
   function criarBotao(texto, classe, handler) {
@@ -334,7 +362,8 @@
         veiculo: cfg.veiculo || 'carro',
         modoRoteamento: global.PacoteEMatoRotaStore.modoPorVeiculo(cfg.veiculo || 'carro'),
         tempoParadaSegundos: Number(cfg.tempoParadaSegundos || 180),
-        pontoInicial: cfg.pontoInicial || null
+        pontoInicial: cfg.pontoInicial || null,
+        retornarAoInicio: cfg.retornarAoInicio === true
       });
       await global.PacoteEMatoRotaStore.salvarRota(rotaAtual, { ativa: true, firestore: false });
     }
@@ -342,12 +371,122 @@
     return rotaAtual;
   }
 
+  function resumoLinha(row) {
+    return (row || []).map(v => String(v ?? '').trim()).filter(Boolean).slice(0, 5).join(' | ');
+  }
+
+  function camposMapeamentoVisiveis() {
+    const permitidos = new Set(['endereco','logradouro','numero','cidade','estado','cep','complemento','apartamento','bloco','sala','loja','pacote','pacotes','observacao','id']);
+    return (global.PacoteEMatoImportacaoXLSX?.camposMapeaveis || []).filter(([campo]) => permitidos.has(campo));
+  }
+
+  function renderizarPreviewImportacao(inspecao, headerIndex) {
+    const table = $('routeImportPreview');
+    if (!table) return;
+    table.replaceChildren();
+    const headers = (inspecao.matriz?.[headerIndex] || []).map(v => String(v ?? '').trim());
+    const thead = document.createElement('thead');
+    const trh = document.createElement('tr');
+    headers.forEach((h, i) => { const th = document.createElement('th'); th.textContent = h || `Coluna ${i + 1}`; trh.appendChild(th); });
+    thead.appendChild(trh); table.appendChild(thead);
+    const tbody = document.createElement('tbody');
+    (inspecao.matriz || []).slice(headerIndex + 1, headerIndex + 5).forEach(row => {
+      const tr = document.createElement('tr');
+      headers.forEach((_, i) => { const td = document.createElement('td'); td.textContent = String(row?.[i] ?? ''); tr.appendChild(td); });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+  }
+
+  function preencherMapeamentoImportacao(inspecao, headerIndex) {
+    const headers = (inspecao.matriz?.[headerIndex] || []).map(v => String(v ?? '').trim());
+    const auto = global.PacoteEMatoImportacaoXLSX.identificarColunas(headers);
+    const container = $('routeImportMappingFields');
+    if (!container) return;
+    container.replaceChildren();
+    camposMapeamentoVisiveis().forEach(([campo, label]) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'route-import-map-field' + (campo === 'endereco' || campo === 'logradouro' ? ' route-import-map-required' : '');
+      const lab = document.createElement('label');
+      lab.textContent = label;
+      const select = document.createElement('select');
+      select.className = 'pemato-field';
+      select.dataset.importMap = campo;
+      const vazio = document.createElement('option'); vazio.value = ''; vazio.textContent = 'Não usar'; select.appendChild(vazio);
+      headers.forEach((h, i) => { const opt = document.createElement('option'); opt.value = String(i); opt.textContent = h || `Coluna ${i + 1}`; select.appendChild(opt); });
+      if (auto[campo] != null) select.value = String(auto[campo]);
+      wrap.append(lab, select); container.appendChild(wrap);
+    });
+    renderizarPreviewImportacao(inspecao, headerIndex);
+  }
+
+  function concluirMapeamentoImportacao(valor) {
+    const modal = $('routeImportMappingModal');
+    if (modal) modal.style.display = 'none';
+    const resolver = resolverMapeamentoImportacao;
+    resolverMapeamentoImportacao = null;
+    if (resolver) resolver(valor);
+  }
+
+  function abrirMapeamentoImportacao(inspecao) {
+    const modal = $('routeImportMappingModal');
+    if (!modal) return Promise.resolve(null);
+    importacaoPendente = inspecao;
+    if ($('routeImportFileName')) $('routeImportFileName').textContent = inspecao.nomeArquivo || 'Planilha';
+    if ($('routeImportSheetInfo')) $('routeImportSheetInfo').textContent = `${inspecao.sheetName || 'Planilha'} · ${inspecao.totalLinhasDados || 0} linha(s) de dados`;
+    const headerSelect = $('routeImportHeaderRow');
+    if (headerSelect) {
+      headerSelect.replaceChildren();
+      const limite = Math.min(inspecao.matriz?.length || 0, 20);
+      for (let i = 0; i < limite; i++) {
+        const row = inspecao.matriz[i];
+        if (!row || !row.some(v => String(v ?? '').trim())) continue;
+        const opt = document.createElement('option');
+        opt.value = String(i);
+        opt.textContent = `Linha ${i + 1}: ${resumoLinha(row) || '(vazia)'}`;
+        headerSelect.appendChild(opt);
+      }
+      headerSelect.value = String(inspecao.headerIndex);
+    }
+    preencherMapeamentoImportacao(inspecao, inspecao.headerIndex);
+    if ($('routeImportMappingError')) { $('routeImportMappingError').style.display = 'none'; $('routeImportMappingError').textContent = ''; }
+    modal.style.display = 'flex';
+    return new Promise(resolve => { resolverMapeamentoImportacao = resolve; });
+  }
+
+  function confirmarMapeamentoImportacao() {
+    if (!importacaoPendente) return concluirMapeamentoImportacao(null);
+    const headerIndex = Number($('routeImportHeaderRow')?.value ?? importacaoPendente.headerIndex);
+    const columnMapping = {};
+    document.querySelectorAll('[data-import-map]').forEach(select => {
+      if (select.value !== '') columnMapping[select.dataset.importMap] = Number(select.value);
+    });
+    if (columnMapping.endereco == null && columnMapping.logradouro == null) {
+      const err = $('routeImportMappingError');
+      if (err) { err.textContent = 'Associe pelo menos “Endereço completo” ou “Logradouro / rua”.'; err.style.display = 'block'; }
+      return;
+    }
+    concluirMapeamentoImportacao({ headerIndex, columnMapping });
+  }
+
   async function importarArquivo(file) {
     if (!file) return;
-    const status = $('routingImportStatus');
-    if (status) status.textContent = 'Lendo planilha...';
+    definirStatusImportacao('Lendo a planilha e identificando as colunas...', null);
     try {
-      const resultado = await global.PacoteEMatoImportacaoXLSX.lerArquivo(file);
+      if (!global.PacoteEMatoImportacaoXLSX) throw new Error('Módulo de importação não carregado. Recarregue a página e tente novamente.');
+      const inspecao = await global.PacoteEMatoImportacaoXLSX.inspecionarArquivo(file);
+      let opcoes = { inspecao };
+      if (inspecao.columns.endereco == null && inspecao.columns.logradouro == null) {
+        definirStatusImportacao('A planilha foi lida, mas preciso saber quais colunas contêm os endereços.', 'warning');
+        const mapeamento = await abrirMapeamentoImportacao(inspecao);
+        if (!mapeamento) {
+          definirStatusImportacao('Importação cancelada. Nenhuma parada foi alterada.', 'warning');
+          return;
+        }
+        opcoes = Object.assign(opcoes, mapeamento);
+      }
+
+      const resultado = await global.PacoteEMatoImportacaoXLSX.lerArquivo(file, opcoes);
       const cfg = global.PacoteEMatoConfiguracoes?.obter?.() || {};
       rotaAtual = global.PacoteEMatoRotaStore.criarRota({
         nome: file.name.replace(/\.(xlsx|xls|csv)$/i, ''),
@@ -357,17 +496,30 @@
         modoRoteamento: global.PacoteEMatoRotaStore.modoPorVeiculo(cfg.veiculo || 'carro'),
         tempoParadaSegundos: Number(cfg.tempoParadaSegundos || 180),
         pontoInicial: cfg.pontoInicial || null,
+        retornarAoInicio: cfg.retornarAoInicio === true,
         paradas: resultado.paradas,
         ordem: resultado.paradas.map(p => p.id)
       });
       await global.PacoteEMatoRotaStore.salvarRota(rotaAtual, { ativa: true });
       renderizarTudo({ fit: true });
-      if (status) status.textContent = `${rotaAtual.paradas.length} parada(s) importada(s). Iniciando localização...`;
-      await geocodificarTodas();
-      if (status) status.textContent = `${rotaAtual.paradas.length} parada(s) importada(s). ${rotaAtual.paradas.filter(p => p.statusGeocodificacao === 'ok').length} localizada(s).`;
+
+      const avisos = resultado.erros?.length ? ` ${resultado.erros.length} linha(s) foram ignoradas por problema de dados.` : '';
+      definirStatusImportacao(`${rotaAtual.paradas.length} parada(s) importada(s) da aba “${resultado.sheetName || 'Planilha'}”.${avisos}`, resultado.erros?.length ? 'warning' : 'success');
+
+      if (!workerConfigurado() || !global.PacoteEMatoGeocodificacao?.endpointAtual?.()) {
+        definirStatusImportacao(`${rotaAtual.paradas.length} parada(s) importada(s). Configure o Cloudflare Worker em Configurações para localizar endereços e otimizar a rota.`, 'warning');
+        return;
+      }
+
+      definirStatusImportacao(`${rotaAtual.paradas.length} parada(s) importada(s). Localizando endereços...`, null);
+      const resumoGeo = await geocodificarTodas({ silencioso: true });
+      if (resumoGeo) {
+        const problemas = resumoGeo.total - resumoGeo.ok;
+        definirStatusImportacao(`${rotaAtual.paradas.length} parada(s) importada(s): ${resumoGeo.ok} localizada(s) e ${problemas} precisando de correção.`, problemas ? 'warning' : 'success');
+      }
     } catch (erro) {
-      console.error(erro);
-      if (status) status.textContent = erro?.message || 'Não foi possível importar a planilha.';
+      console.error('Pacote É Mato: falha na importação XLSX.', erro);
+      definirStatusImportacao(erro?.message || 'Não foi possível importar a planilha.', 'error');
       notificar(erro?.message || 'Falha ao importar planilha.');
     } finally {
       if ($('routingXlsxInput')) $('routingXlsxInput').value = '';
@@ -410,10 +562,16 @@
         chaveFisica: key
       };
     }).sort((a, b) => a.ordemOriginal - b.ordemOriginal);
+    const cfg = global.PacoteEMatoConfiguracoes?.obter?.() || {};
     rotaAtual = global.PacoteEMatoRotaStore.criarRota({
       nome: 'Rota importada da Bipagem',
       origem: 'pdf-legado',
       status: 'planejamento',
+      veiculo: cfg.veiculo || 'carro',
+      modoRoteamento: global.PacoteEMatoRotaStore.modoPorVeiculo(cfg.veiculo || 'carro'),
+      tempoParadaSegundos: Number(cfg.tempoParadaSegundos || 180),
+      pontoInicial: cfg.pontoInicial || null,
+      retornarAoInicio: cfg.retornarAoInicio === true,
       paradas,
       ordem: paradas.map(p => p.id)
     });
@@ -422,15 +580,33 @@
     await geocodificarTodas();
   }
 
-  async function geocodificarTodas() {
-    if (!rotaAtual?.paradas?.length) return;
+  async function geocodificarTodas(opcoes) {
+    if (!rotaAtual?.paradas?.length) {
+      if (!opcoes?.silencioso) notificar('Importe ou adicione paradas antes de validar endereços.');
+      return null;
+    }
     aplicarRotaNoState();
     const btn = $('routingGeocodeBtn');
     if (btn) btn.disabled = true;
     try {
-      await global.PacoteEMatoGeocodificacao.geocodificarParadas(rotaAtual.paradas);
+      if (!global.PacoteEMatoGeocodificacao?.endpointAtual?.()) {
+        throw new Error('Serviço de geocodificação não configurado. Abra Configurações e informe a URL do Cloudflare Worker.');
+      }
+      if (!opcoes?.silencioso) definirStatusImportacao('Validando endereços...', null);
+      const resumoGeo = await global.PacoteEMatoGeocodificacao.geocodificarParadas(rotaAtual.paradas);
       await global.PacoteEMatoRotaStore.salvarRota(rotaAtual, { ativa: true });
       renderizarTudo({ fit: true });
+      if (!opcoes?.silencioso) {
+        const problemas = resumoGeo.total - resumoGeo.ok;
+        definirStatusImportacao(`${resumoGeo.ok} endereço(s) localizado(s). ${problemas} parada(s) precisam de correção.`, problemas ? 'warning' : 'success');
+      }
+      return resumoGeo;
+    } catch (erro) {
+      if (!opcoes?.silencioso) {
+        definirStatusImportacao(erro?.message || 'Falha ao validar endereços.', 'error');
+        notificar(erro?.message || 'Falha ao validar endereços.');
+      }
+      return null;
     } finally {
       if (btn) btn.disabled = false;
     }
@@ -484,7 +660,7 @@
   async function usarPontoInicialSalvo() {
     const cfg = global.PacoteEMatoConfiguracoes?.obter?.() || {};
     const salvo = cfg.pontoInicial;
-    if (!salvo || !Number.isFinite(Number(salvo.lat)) || !Number.isFinite(Number(salvo.lon))) {
+    if (!pontoValido(salvo)) {
       return notificar('Nenhum ponto de partida validado foi salvo ainda.');
     }
     rotaAtual.pontoInicial = clone(salvo);
@@ -496,7 +672,7 @@
 
   function salvarPontoInicialAtual() {
     const p = rotaAtual?.pontoInicial;
-    if (!p || !Number.isFinite(Number(p.lat)) || !Number.isFinite(Number(p.lon))) {
+    if (!pontoValido(p)) {
       return notificar('Valide um ponto de partida antes de salvá-lo.');
     }
     global.PacoteEMatoConfiguracoes?.salvar?.({ pontoInicial: clone(p) });
@@ -505,12 +681,17 @@
 
   async function otimizarRota() {
     if (!rotaAtual) return;
+    if (!workerConfigurado() || !global.PacoteEMatoServicoRota?.endpoint?.('optimize')) {
+      const msg = 'Serviço de otimização não configurado. Abra Configurações, informe a URL do Cloudflare Worker e teste a conexão.';
+      definirStatusImportacao(msg, 'error');
+      return notificar(msg);
+    }
     const btn = $('routingOptimizeBtn');
     if (btn) btn.disabled = true;
     try {
-      const unresolved = rotaAtual.paradas.filter(p => p.statusGeocodificacao !== 'ok' || !Number.isFinite(Number(p.latitude)) || !Number.isFinite(Number(p.longitude)));
+      const unresolved = rotaAtual.paradas.filter(p => !paradaLocalizada(p));
       if (unresolved.length) throw new Error(`Corrija ou localize ${unresolved.length} parada(s) antes de otimizar.`);
-      if (!rotaAtual.pontoInicial || !Number.isFinite(Number(rotaAtual.pontoInicial.lat)) || !Number.isFinite(Number(rotaAtual.pontoInicial.lon))) {
+      if (!pontoValido(rotaAtual.pontoInicial)) {
         throw new Error('Defina um ponto de partida válido antes de otimizar.');
       }
 
@@ -537,9 +718,11 @@
       if (!rotaAtual.iniciadoEm) rotaAtual.iniciadoEm = Date.now();
       await global.PacoteEMatoRotaStore.salvarRota(rotaAtual, { ativa: true });
       renderizarTudo({ fit: true });
+      definirStatusImportacao('Rota otimizada pela rede viária, desenhada no mapa e salva como rota ativa.', 'success');
       notificar('Rota otimizada pela rede viária e salva como rota ativa.');
     } catch (erro) {
       console.error(erro);
+      definirStatusImportacao(erro?.message || 'Não foi possível otimizar a rota.', 'error');
       notificar(erro?.message || 'Não foi possível otimizar a rota.');
     } finally {
       if (btn) btn.disabled = false;
@@ -721,33 +904,70 @@
     }
   }
 
-  async function alterarConfiguracao() {
+  async function alterarNomeRota() {
     if (!rotaAtual) return;
-    const anteriores = {
-      veiculo: rotaAtual.veiculo,
-      tempoParadaSegundos: Number(rotaAtual.tempoParadaSegundos || 0),
-      retornarAoInicio: rotaAtual.retornarAoInicio === true
-    };
-    rotaAtual.nome = String($('routingRouteName')?.value || rotaAtual.nome || 'Rota').trim();
-    rotaAtual.veiculo = String($('routingVehicle')?.value || 'carro');
-    rotaAtual.modoRoteamento = global.PacoteEMatoRotaStore.modoPorVeiculo(rotaAtual.veiculo);
-    rotaAtual.tempoParadaSegundos = Math.max(0, Number($('routingStopMinutes')?.value || 0) * 60);
-    rotaAtual.retornarAoInicio = $('routingReturnStart')?.checked === true;
+    const nome = String($('routingRouteName')?.value || rotaAtual.nome || 'Rota').trim();
+    if (nome === rotaAtual.nome) return;
+    rotaAtual.nome = nome || 'Rota';
+    await global.PacoteEMatoRotaStore.salvarRota(rotaAtual, { ativa: true });
+    renderizarResumo();
+  }
 
-    const afetaRota = anteriores.veiculo !== rotaAtual.veiculo
-      || anteriores.tempoParadaSegundos !== Number(rotaAtual.tempoParadaSegundos || 0)
-      || anteriores.retornarAoInicio !== rotaAtual.retornarAoInicio;
-    if (afetaRota && (rotaAtual.rotaOtimizada || rotaAtual.geometria)) invalidarRotaCalculada();
+  async function aplicarConfiguracoesNaRota(cfgRecebida) {
+    if (!rotaAtual) return;
+    const cfg = cfgRecebida || global.PacoteEMatoConfiguracoes?.obter?.() || {};
+    const proximoVeiculo = cfg.veiculo || 'carro';
+    const proximoTempo = Math.max(0, Number(cfg.tempoParadaSegundos || 0));
+    const proximoRetorno = cfg.retornarAoInicio === true;
+    const proximoPonto = cfg.pontoInicial || null;
+    const pontoAnterior = JSON.stringify(rotaAtual.pontoInicial || null);
+    const mudouCalculo = rotaAtual.veiculo !== proximoVeiculo
+      || Number(rotaAtual.tempoParadaSegundos || 0) !== proximoTempo
+      || rotaAtual.retornarAoInicio !== proximoRetorno
+      || pontoAnterior !== JSON.stringify(proximoPonto);
 
-    global.PacoteEMatoConfiguracoes?.salvar?.({
-      veiculo: rotaAtual.veiculo,
-      tempoParadaSegundos: rotaAtual.tempoParadaSegundos
-    });
-    agendarSalvar();
+    rotaAtual.veiculo = proximoVeiculo;
+    rotaAtual.modoRoteamento = global.PacoteEMatoRotaStore.modoPorVeiculo(proximoVeiculo);
+    rotaAtual.tempoParadaSegundos = proximoTempo;
+    rotaAtual.retornarAoInicio = proximoRetorno;
+    rotaAtual.pontoInicial = clone(proximoPonto);
+    if (mudouCalculo && (rotaAtual.rotaOtimizada || rotaAtual.geometria)) invalidarRotaCalculada();
+    await global.PacoteEMatoRotaStore.salvarRota(rotaAtual, { ativa: true });
+    renderizarTudo({ fit: true });
   }
 
   function abrirNavegacao() {
     if (!rotaAtual?.geometria) return notificar('Calcule a rota pelas ruas antes de iniciar a navegação.');
+
+    const cfg = global.PacoteEMatoConfiguracoes?.obter?.() || {};
+    const preferencia = String(cfg.navegacao || 'pacote_emato');
+
+    if (preferencia === 'waze' || preferencia === 'google') {
+      const porId = new Map((rotaAtual.paradas || []).map(p => [p.id, p]));
+      const proxima = (rotaAtual.ordem || [])
+        .map(id => porId.get(id))
+        .find(p => p && !['entregue', 'concluida', 'nao_entregue'].includes(p.statusEntrega))
+        || (rotaAtual.paradas || [])[0];
+
+      if (!proxima) return notificar('A rota não possui uma parada disponível para navegação.');
+
+      const endereco = String(proxima.enderecoOriginal || proxima.endereco || proxima.enderecoNormalizado || '').trim();
+      if (!endereco) return notificar('A próxima parada não possui endereço válido para abrir a navegação externa.');
+
+      // Reutiliza a integração já existente no sistema legado, sem duplicar regras de Waze/Google Maps.
+      global.enderecoSelecionadoGps = endereco;
+      if (typeof global.abrirGpsSelecionado === 'function') {
+        global.abrirGpsSelecionado(preferencia);
+      } else {
+        const query = encodeURIComponent(endereco);
+        const url = preferencia === 'waze'
+          ? `https://waze.com/ul?q=${query}&navigate=yes`
+          : `https://www.google.com/maps/search/?api=1&query=${query}`;
+        global.open(url, '_blank');
+      }
+      return;
+    }
+
     global.PacoteEMatoAppShell?.abrirModulo?.('navegacao');
     global.PacoteEMatoNavegacao?.iniciar?.(rotaAtual);
   }
@@ -769,20 +989,21 @@
   }
 
   function bind() {
-    $('routingImportBtn')?.addEventListener('click', () => $('routingXlsxInput')?.click());
+    $('routingImportBtn')?.addEventListener('click', () => {
+      const input = $('routingXlsxInput');
+      if (!input) return definirStatusImportacao('Seletor de planilha não encontrado. Recarregue a página.', 'error');
+      input.click();
+    });
     $('routingXlsxInput')?.addEventListener('change', event => importarArquivo(event.target.files?.[0]));
     $('routingUseLegacyBtn')?.addEventListener('click', usarRotaLegada);
     $('routingAddStopBtn')?.addEventListener('click', () => abrirEditor(null));
-    $('routingGeocodeBtn')?.addEventListener('click', geocodificarTodas);
+    $('routingGeocodeBtn')?.addEventListener('click', () => geocodificarTodas());
     $('routingOptimizeBtn')?.addEventListener('click', otimizarRota);
     $('routingInvertBtn')?.addEventListener('click', inverterRota);
-    $('routingUseLocationBtn')?.addEventListener('click', usarLocalizacaoAtual);
-    $('routingLocateStartBtn')?.addEventListener('click', localizarPontoInicial);
-    $('routingUseSavedStartBtn')?.addEventListener('click', usarPontoInicialSalvo);
-    $('routingSaveStartBtn')?.addEventListener('click', salvarPontoInicialAtual);
     $('routingExportPdfBtn')?.addEventListener('click', exportarPdf);
     $('routingStartNavBtn')?.addEventListener('click', abrirNavegacao);
     $('routingFitMapBtn')?.addEventListener('click', () => global.PacoteEMatoMapa?.ajustarTodos());
+    $('routingOpenSettingsBtn')?.addEventListener('click', () => global.PacoteEMatoAppShell?.abrirModulo?.('configuracoes'));
     $('routingSelectedStopEdit')?.addEventListener('click', () => {
       const id = global.appState?.roteirizacao?.paradaSelecionadaId;
       if (id) abrirEditor(id);
@@ -792,12 +1013,21 @@
     $('routeStopEditorClose')?.addEventListener('click', fecharEditor);
     $('routeKeepOrderBtn')?.addEventListener('click', () => concluirDecisaoReotimizacao('manter'));
     $('routeReoptBtn')?.addEventListener('click', () => concluirDecisaoReotimizacao('otimizar'));
-    ['routingRouteName','routingVehicle','routingStopMinutes','routingReturnStart'].forEach(id => {
-      $(id)?.addEventListener('change', alterarConfiguracao);
-    });
+    $('routingRouteName')?.addEventListener('change', alterarNomeRota);
     $('routingMobileMapTab')?.addEventListener('click', () => abrirMobilePane('mapa'));
     $('routingMobileListTab')?.addEventListener('click', () => abrirMobilePane('lista'));
 
+    $('routeImportMappingClose')?.addEventListener('click', () => concluirMapeamentoImportacao(null));
+    $('routeImportMappingCancel')?.addEventListener('click', () => concluirMapeamentoImportacao(null));
+    $('routeImportMappingConfirm')?.addEventListener('click', confirmarMapeamentoImportacao);
+    $('routeImportHeaderRow')?.addEventListener('change', () => {
+      if (!importacaoPendente) return;
+      const headerIndex = Number($('routeImportHeaderRow')?.value ?? importacaoPendente.headerIndex);
+      preencherMapeamentoImportacao(importacaoPendente, headerIndex);
+    });
+
+    global.addEventListener('pemato:config:update', event => aplicarConfiguracoesNaRota(event.detail));
+    global.addEventListener('pemato:worker:update', () => renderizarPreferencias());
     global.addEventListener('pemato:geo:update', () => { renderizarResumo(); renderizarLista(); global.PacoteEMatoMapa?.renderizar(); });
     global.addEventListener('pemato:geo:progress', () => renderizarResumo());
     global.addEventListener('pemato:rota:salva', e => {

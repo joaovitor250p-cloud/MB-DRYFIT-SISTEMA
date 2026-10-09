@@ -16,6 +16,14 @@
   function $(id) { return document.getElementById(id); }
   function cfg() { return global.PEMATO_MAP_CONFIG || {}; }
 
+  function coordenadaValida(lat, lon) {
+    if (lat === null || lat === undefined || lon === null || lon === undefined) return false;
+    if (String(lat).trim() === '' || String(lon).trim() === '') return false;
+    const a = Number(lat);
+    const o = Number(lon);
+    return Number.isFinite(a) && a >= -90 && a <= 90 && Number.isFinite(o) && o >= -180 && o <= 180;
+  }
+
   function formatarDistancia(m) {
     const n = Number(m || 0);
     if (!Number.isFinite(n)) return '—';
@@ -101,7 +109,7 @@
     if (!mapa || !mapReady) return;
     const p = proxima();
     if (nextMarker) { try { nextMarker.remove(); } catch (_) {} nextMarker = null; }
-    if (!p || !Number.isFinite(Number(p.latitude)) || !Number.isFinite(Number(p.longitude))) return;
+    if (!p || !coordenadaValida(p.latitude, p.longitude)) return;
     const el = document.createElement('div');
     el.className = 'nav-next-marker';
     el.textContent = String(p.ordemOtimizada || p.ordemOriginal || indiceAtual + 1);
@@ -158,7 +166,7 @@
     if (!remaining.length) return;
     const points = [{ lat: ultimaPosicao.lat, lon: ultimaPosicao.lon }];
     remaining.forEach(p => {
-      if (Number.isFinite(Number(p.latitude)) && Number.isFinite(Number(p.longitude))) {
+      if (coordenadaValida(p.latitude, p.longitude)) {
         points.push({ lat: Number(p.latitude), lon: Number(p.longitude) });
       }
     });
@@ -221,10 +229,10 @@
     const lat = Number(p.latitude);
     const lon = Number(p.longitude);
     let url = '';
-    if (provider === 'waze' && Number.isFinite(lat) && Number.isFinite(lon)) {
+    if (provider === 'waze' && coordenadaValida(p.latitude, p.longitude)) {
       url = `https://waze.com/ul?ll=${encodeURIComponent(lat + ',' + lon)}&navigate=yes`;
     } else if (provider === 'google') {
-      const dest = Number.isFinite(lat) && Number.isFinite(lon) ? `${lat},${lon}` : (p.enderecoOriginal || '');
+      const dest = coordenadaValida(p.latitude, p.longitude) ? `${lat},${lon}` : (p.enderecoOriginal || '');
       url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}&travelmode=driving`;
     }
     if (url) global.open(url, '_blank', 'noopener');

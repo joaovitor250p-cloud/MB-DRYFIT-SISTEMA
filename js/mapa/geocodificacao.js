@@ -59,14 +59,26 @@
   }
 
   function coordenadasValidas(lat, lon) {
+    if (lat === null || lat === undefined || lon === null || lon === undefined) return false;
+    if (String(lat).trim() === '' || String(lon).trim() === '') return false;
     const a = Number(lat);
     const o = Number(lon);
     return Number.isFinite(a) && Number.isFinite(o) && a >= -90 && a <= 90 && o >= -180 && o <= 180;
   }
 
   function numeroSolicitado(parada) {
-    if (parada.numeroImovel) return numeroComparavel(parada.numeroImovel);
-    const chave = String(parada.chaveFisica || '');
+    // Rotas XLSX/manuais usam `numero`; o legado pode usar `numeroImovel` ou chaveFisica.
+    const explicito = String(parada?.numero ?? parada?.numeroImovel ?? '').trim();
+    if (explicito) return numeroComparavel(explicito);
+
+    const endereco = String(parada?.enderecoOriginal || parada?.enderecoConsulta || '');
+    const base = endereco.split(/\s+-\s+/)[0] || endereco;
+    const aposVirgula = base.match(/,\s*(\d+[A-Za-z]?)\b/);
+    if (aposVirgula) return numeroComparavel(aposVirgula[1]);
+    const numerosEndereco = base.match(/\b\d+[A-Za-z]?\b/g) || [];
+    if (numerosEndereco.length) return numeroComparavel(numerosEndereco[numerosEndereco.length - 1]);
+
+    const chave = String(parada?.chaveFisica || '');
     const m = chave.match(/_(\d+[a-z]?)(?:_s\d+)?$/i);
     return m ? numeroComparavel(m[1]) : '';
   }
@@ -77,11 +89,16 @@
     const cfg = config();
     const aceitos = [];
 
+    // Sem número do imóvel não aceitamos silenciosamente um ponto aproximado.
+    if (!numeroEsperado) {
+      return { status: resultados.length ? 'ambiguo' : 'nao_encontrado', motivo: 'numero_imovel_ausente' };
+    }
+
     for (const r of resultados) {
       if (!coordenadasValidas(r.lat, r.lon)) continue;
 
       const numeroRetornado = numeroComparavel(r.housenumber || '');
-      if (!numeroEsperado || !numeroRetornado || numeroRetornado !== numeroEsperado) continue;
+      if (!numeroRetornado || numeroRetornado !== numeroEsperado) continue;
 
       const confidence = Number(r.rank?.confidence ?? 0);
       const streetConfidence = Number(r.rank?.confidence_street_level ?? confidence);
@@ -324,7 +341,7 @@
     for (let i = 0; i < lista.length; i++) {
       if (minhaExecucao !== execucaoAtual) break;
       const parada = lista[i];
-      if (parada.statusGeocodificacao === 'ok' && Number.isFinite(parada.latitude) && Number.isFinite(parada.longitude)) {
+      if (parada.statusGeocodificacao === 'ok' && coordenadasValidas(parada.latitude, parada.longitude)) {
         emitir('pemato:geo:progress', { ...resumo(lista), processadas: i + 1 });
         continue;
       }
