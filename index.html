@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>PacoteÉMato Pro - Paradas Corrigidas</title>
+  <title>Pacote É Mato</title>
   
   <!-- Ícone Favicon SVG -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230b0b0d' stroke='%2334d399' stroke-width='2'/%3E%3Cpath d='M22 68 Q10 46 28 32 Q38 50 22 68 Z' fill='%2310b981'/%3E%3Cpath d='M78 68 Q90 46 72 32 Q62 50 78 68 Z' fill='%2310b981'/%3E%3Cpolygon points='50,22 78,36 50,50 22,36' fill='%2310b981' stroke='%2334d399' stroke-width='1.5'/%3E%3Cpolygon points='22,36 50,50 50,78 22,64' fill='%23059669' stroke='%23047857' stroke-width='1.5'/%3E%3Cpolygon points='78,36 50,50 50,78 78,64' fill='%23047857' stroke='%23065f46' stroke-width='1.5'/%3E%3Cpath d='M50 22 L50 50 M36 43 L64 43' stroke='%23a7f3d0' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M50 78 Q40 60 50 42 Q60 60 50 78 Z' fill='%2334d399'/%3E%3Cpath d='M50 56 Q44 48 38 52 Q42 60 50 56 Z' fill='%236ee7b7'/%3E%3Cpath d='M50 50 Q56 42 62 46 Q58 54 50 50 Z' fill='%236ee7b7'/%3E%/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230b0b0d' stroke='%2334d399' stroke-width='2'/%3E%3Cpath d='M22 68 Q10 46 28 32 Q38 50 22 68 Z' fill='%2310b981'/%3E%3Cpath d='M78 68 Q90 46 72 32 Q62 50 78 68 Z' fill='%2310b981'/%3E%3Cpolygon points='50,22 78,36 50,50 22,36' fill='%2310b981' stroke='%2334d399' stroke-width='1.5'/%3E%3Cpolygon points='22,36 50,50 50,78 22,64' fill='%23059669' stroke='%23047857' stroke-width='1.5'/%3E%3Cpolygon points='78,36 50,50 50,78 78,64' fill='%23047857' stroke='%23065f46' stroke-width='1.5'/%3E%3Cpath d='M50 22 L50 50 M36 43 L64 43' stroke='%23a7f3d0' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M50 78 Q40 60 50 42 Q60 60 50 78 Z' fill='%2334d399'/%3E%3Cpath d='M50 56 Q44 48 38 52 Q42 60 50 56 Z' fill='%236ee7b7'/%3E%3Cpath d='M50 50 Q56 42 62 46 Q58 54 50 50 Z' fill='%236ee7b7'/%3E%3C/svg%3E">
   
   <!-- PWA Setup -->
   <link rel="manifest" href="manifest.json">
@@ -25,6 +25,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
@@ -34,6 +36,9 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
     <link rel="stylesheet" href="css/mapa.css">
+    <link rel="stylesheet" href="css/app-shell.css">
+    <link rel="stylesheet" href="css/roteirizacao.css">
+    <link rel="stylesheet" href="css/navegacao.css">
 
 
 
@@ -225,16 +230,16 @@
         <div id="paneLogin" class="auth-pane active">
           <label class="form-label-pro">WhatsApp / Acesso</label>
           <div class="input-group">
-            <span class="input-icon-left">📱</span>
+            <span class="input-icon-left"></span>
             <input type="tel" id="inputTel" class="input-auth" placeholder="(00) 00000-0000" inputmode="numeric" pattern="[0-9]*" autocomplete="tel-national" oninput="normalizarCampoTelefone(this)" onblur="validarCampoTelefone(this)">
           </div>
           <div id="avisoNumero" role="status" style="color:#d97706;font-size:.74rem;margin:0 0 10px;"></div>
 
           <label class="form-label-pro">Sua senha</label>
           <div class="input-group">
-            <span class="input-icon-left">🔑</span>
+            <span class="input-icon-left"></span>
             <input type="password" id="inputSenha" class="input-auth com-icone-direita" placeholder="Digite sua senha" autocomplete="current-password">
-            <span class="input-icon-right" id="toggleSenhaVisivel" onclick="alternarVisibilidadeSenha()">👁️</span>
+            <span class="input-icon-right" id="toggleSenhaVisivel" onclick="alternarVisibilidadeSenha()">VER</span>
           </div>
 
           <button type="button" class="auth-inline-link" onclick="toggleRecuperarSenha()">Esqueci minha senha</button>
@@ -257,13 +262,13 @@
             <p class="recovery-copy">Informe o e-mail cadastrado. O Firebase enviará um link para você criar uma nova senha.</p>
             <label class="form-label-pro">E-mail cadastrado</label>
             <div class="input-group">
-              <span class="input-icon-left">✉️</span>
+              <span class="input-icon-left"></span>
               <input type="email" id="inputEmailRecuperacao" class="input-auth" placeholder="seuemail@exemplo.com" autocomplete="email">
             </div>
             <button type="button" class="btn-action-primary recovery-send-btn" id="btnEnviarReset" onclick="recuperarSenhaFirebase()">Enviar e-mail para redefinir</button>
 
             <div id="recoverySuccessCard" class="recovery-success-card" style="display:none;">
-              <div class="recovery-success-icon">✓</div>
+              <div class="recovery-success-icon"></div>
               <div>
                 <strong>E-mail enviado com segurança</strong>
                 <p>Verifique a Caixa de entrada. Se não encontrar, confira Spam, Lixo eletrônico e Promoções. Se estiver no Spam, marque como “Não é spam”.</p>
@@ -284,34 +289,34 @@
         <div id="paneCadastro" class="auth-pane">
           <label class="form-label-pro">WhatsApp</label>
           <div class="input-group">
-            <span class="input-icon-left">📱</span>
+            <span class="input-icon-left"></span>
             <input type="tel" id="cadastroTel" class="input-auth" placeholder="(00) 00000-0000" inputmode="numeric" pattern="[0-9]*" autocomplete="tel-national" oninput="normalizarCampoTelefone(this)" onblur="validarCampoTelefone(this)">
           </div>
 
           <label class="form-label-pro">E-mail</label>
           <div class="input-group">
-            <span class="input-icon-left">✉️</span>
+            <span class="input-icon-left"></span>
             <input type="email" id="cadastroEmail" class="input-auth" placeholder="seuemail@exemplo.com" autocomplete="email">
           </div>
 
           <label class="form-label-pro">Crie sua senha</label>
           <div class="input-group">
-            <span class="input-icon-left">🔑</span>
+            <span class="input-icon-left"></span>
             <input type="password" id="cadastroSenha" class="input-auth" placeholder="Mínimo de 6 caracteres" autocomplete="new-password">
           </div>
 
           <label class="form-label-pro">Confirme sua senha</label>
           <div class="input-group">
-            <span class="input-icon-left">✅</span>
+            <span class="input-icon-left"></span>
             <input type="password" id="cadastroSenha2" class="input-auth" placeholder="Repita a senha" autocomplete="new-password">
           </div>
 
           <details class="referral-details">
-            <summary>🎁 Tenho um código de indicação</summary>
+            <summary> Tenho um código de indicação</summary>
             <div class="referral-content">
               <label class="form-label-pro" style="color:#34d399;">Código de indicação <span style="color:var(--text-muted);font-weight:600;">(opcional)</span></label>
               <div class="input-group" style="margin-bottom:0;">
-                <span class="input-icon-left">🎟️</span>
+                <span class="input-icon-left"></span>
                 <input type="tel" id="inputCupomIndicacao" class="input-auth" placeholder="WhatsApp de quem indicou" inputmode="numeric" pattern="[0-9]*" autocomplete="tel-national" oninput="normalizarCampoTelefone(this)" onblur="validarCampoTelefone(this)">
               </div>
             </div>
@@ -319,7 +324,7 @@
 
           <p class="auth-helper">Crie uma nova senha com no mínimo 6 caracteres. Se este WhatsApp for de uma conta antiga, o sistema pedirá separadamente a senha antiga apenas para confirmar a vinculação.</p>
           <button type="button" class="btn-action-primary auth-main-button" id="btnCriarConta" onclick="criarContaFirebase()">Criar minha conta</button>
-          <button type="button" class="btn-action-trial auth-trial-button" id="btnTesteGratis" onclick="ativarTesteGratis()">🎁 TESTE GRÁTIS — 10 DIAS</button>
+          <button type="button" class="btn-action-trial auth-trial-button" id="btnTesteGratis" onclick="ativarTesteGratis()"> TESTE GRÁTIS — 10 DIAS</button>
         </div>
 
         <div id="avisoRenovacao" role="status" style="display:none;"><strong>Sua assinatura expirou</strong><p>Renove para continuar. Você mantém a mesma conta e o mesmo número.</p><button type="button" onclick="document.getElementById('areaPlanosRenovacao').scrollIntoView({behavior:'smooth',block:'start'})">Ver planos de renovação</button></div>
@@ -370,7 +375,7 @@
       </div>
 
       <div class="auth-footer-premium">
-        <button type="button" class="auth-support-link" onclick="abrirSuporteWhatsApp()">💬 Precisa de ajuda? <strong>Falar com o suporte</strong></button>
+        <button type="button" class="auth-support-link" onclick="abrirSuporteWhatsApp()"> Precisa de ajuda? <strong>Falar com o suporte</strong></button>
         <div class="auth-footer-status"><span></span> Sistema online • Pacote É Mato</div>
       </div>
     </div>
@@ -380,8 +385,8 @@
   <div id="modalTutorialVideo" class="modal-backdrop" onclick="if(event.target===this) fecharTutorialVideo()">
     <div class="modal-card tutorial-video-card">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-        <div class="tutorial-video-title">▶️ Como usar o Pacote É Mato</div>
-        <button onclick="fecharTutorialVideo()" aria-label="Fechar tutorial" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;padding:4px 8px;">✕</button>
+        <div class="tutorial-video-title">▶ Como usar o Pacote É Mato</div>
+        <button onclick="fecharTutorialVideo()" aria-label="Fechar tutorial" style="background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;padding:4px 8px;"></button>
       </div>
       <video id="videoTutorialApp" class="tutorial-video" controls playsinline preload="metadata">
         <source src="tutorial-pacote-e-mato.mp4" type="video/mp4">
@@ -394,10 +399,10 @@
   <!-- AVISO DE TUTORIAL NO PRIMEIRO ACESSO -->
   <div id="modalPrimeiroTutorial" class="modal-backdrop">
     <div class="modal-card tutorial-video-card" style="text-align:center;">
-      <div style="width:54px;height:54px;margin:0 auto 12px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:rgba(16,185,129,.14);border:1px solid rgba(52,211,153,.28);font-size:1.45rem;">▶️</div>
+      <div style="width:54px;height:54px;margin:0 auto 12px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:rgba(16,185,129,.14);border:1px solid rgba(52,211,153,.28);font-size:1.45rem;">▶</div>
       <div class="tutorial-video-title" style="font-size:1.08rem;">Bem-vindo ao Pacote É Mato</div>
       <p style="color:var(--text-muted);font-size:.82rem;line-height:1.5;margin:0 0 14px;">Antes da sua primeira rota, recomendamos assistir ao tutorial rápido para conhecer as principais funções do aplicativo.</p>
-      <button class="btn-action-primary" onclick="assistirTutorialPrimeiroAcesso()">▶️ Assistir tutorial</button>
+      <button class="btn-action-primary" onclick="assistirTutorialPrimeiroAcesso()">▶ Assistir tutorial</button>
       <button class="btn-action-trial" onclick="fecharAvisoPrimeiroTutorial()" style="margin-top:8px;">Agora não</button>
     </div>
   </div>
@@ -406,8 +411,8 @@
   <div id="modalIndicacao" class="modal-backdrop">
     <div class="modal-card" style="max-width:390px; text-align:left;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h3 style="color:#34d399; font-weight:800; font-size:1.05rem;">🎁 Indique e Ganhe Dias</h3>
-        <span onclick="fecharModalIndicacao()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
+        <h3 style="color:#34d399; font-weight:800; font-size:1.05rem;"> Indique e Ganhe Dias</h3>
+        <span onclick="fecharModalIndicacao()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;"></span>
       </div>
       
       <div style="font-size:0.75rem; color:#fff; line-height:1.4; margin-bottom:12px;">
@@ -420,7 +425,7 @@
       </div>
 
       <button onclick="copiarLinkConviteIndicacao()" class="btn-action-primary" style="background:var(--accent-green-gradient); margin-bottom:8px;">
-        📲 Copiar Link para WhatsApp
+         Copiar Link para WhatsApp
       </button>
       <button onclick="fecharModalIndicacao()" style="background:none; border:none; color:var(--text-muted); font-size:0.75rem; font-weight:700; cursor:pointer; width:100%;">
         Fechar
@@ -432,8 +437,8 @@
   <div id="modalHistoricoRotas" class="modal-backdrop">
     <div class="modal-card" style="max-width:420px; text-align:left;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">📊 Histórico de Rotas</h3>
-        <span onclick="fecharModalHistorico()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
+        <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;"> Histórico de Rotas</h3>
+        <span onclick="fecharModalHistorico()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;"></span>
       </div>
       <div id="listaHistoricoRotas" style="max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
       <button onclick="fecharModalHistorico()" class="btn-action-primary" style="margin-top:12px;">Fechar</button>
@@ -449,18 +454,18 @@
       
       <div class="qr-placeholder" id="qrContainer"></div>
       
-      <div style="font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:2px;" data-i18n="waiting_confirmation">Aguardando confirmação... ⏳</div>
+      <div style="font-size:0.8rem; font-weight:700; color:var(--text-main); margin-bottom:2px;" data-i18n="waiting_confirmation">Aguardando confirmação... </div>
       <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:10px;" data-i18n="auto_unlock">O sistema destrava sozinho após o pagamento.</div>
 
       <input type="text" id="pixCopiaColaOut" readonly style="width:100%; padding:10px; background:var(--surface-2); color:#34d399; border:1px solid var(--surface-border); border-radius:10px; font-size:0.68rem; text-align:center; outline:none;">
       
       <button class="btn-action-primary" style="background:var(--accent-green-gradient); margin-top:10px;" onclick="copiarPixCopiaCola()">
-        📋 <span data-i18n="copy_pix">Copiar Código Pix</span>
+         <span data-i18n="copy_pix">Copiar Código Pix</span>
       </button>
 
       <!-- NOVO BOTÃO DE FORÇAR VERIFICAÇÃO MANUALMENTE -->
       <button class="btn-action-primary" style="background:#3b82f6; margin-top:6px;" onclick="forcarChecagemPagamentoManual()">
-        🔄 Já fiz o pagamento, liberar acesso!
+         Já fiz o pagamento, liberar acesso!
       </button>
 
       <button onclick="fecharModalPix()" style="margin-top:8px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;" data-i18n="cancel">
@@ -472,13 +477,13 @@
   <div id="modalVisualizarRota" class="modal-backdrop">
     <div class="modal-card" style="max-width:420px; text-align:left;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">📋 Paradas & Endereços</h3>
-        <span onclick="fecharModalRota()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;">✕</span>
+        <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;"> Paradas & Endereços</h3>
+        <span onclick="fecharModalRota()" style="cursor:pointer; color:var(--text-muted); font-weight:bold;"></span>
       </div>
       
       <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:6px; margin-bottom:8px;">
-        <button class="segmented-btn active" id="filtroTabTodos" onclick="filtrarParadasModal('todos')">🌐 Paradas (<span id="contadorTodos">0</span>)</button>
-        <button class="segmented-btn" id="filtroTabDuplos" onclick="filtrarParadasModal('duplos')">🔹 Pacotes Múltiplos (<span id="contadorDuplos">0</span>)</button>
+        <button class="segmented-btn active" id="filtroTabTodos" onclick="filtrarParadasModal('todos')"> Paradas (<span id="contadorTodos">0</span>)</button>
+        <button class="segmented-btn" id="filtroTabDuplos" onclick="filtrarParadasModal('duplos')"> Pacotes Múltiplos (<span id="contadorDuplos">0</span>)</button>
       </div>
 
       <div id="resumoMultiplosRota" style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin:0 2px 10px;text-align:center;"></div>
@@ -493,7 +498,7 @@
   <div id="modalResumoFinalRota" class="modal-backdrop" style="display:none; z-index:1000300;">
     <div class="modal-card" style="max-width:390px;text-align:left;">
       <div style="text-align:center;margin-bottom:12px;">
-        <div style="font-size:2rem;margin-bottom:4px;">✅</div>
+        <div style="font-size:2rem;margin-bottom:4px;"></div>
         <div style="font-size:.64rem;color:#34d399;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Rota finalizada</div>
         <h3 style="font-size:1.18rem;font-weight:900;color:var(--text-main);margin-top:3px;">Resumo da rota</h3>
       </div>
@@ -532,10 +537,10 @@
       <h3 style="font-size:1.05rem; font-weight:800; color:var(--text-main); margin-bottom:12px;" id="tituloGpsParada">Parada</h3>
       
       <button class="gps-option-btn" style="background:linear-gradient(135deg, #059669, #10b981); color:#fff;" onclick="abrirGpsSelecionado('waze')">
-        🚗 Abrir no Waze
+         Abrir no Waze
       </button>
       <button class="gps-option-btn" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border);" onclick="abrirGpsSelecionado('maps')">
-        🗺️ Abrir no Google Maps
+         Abrir no Google Maps
       </button>
       
       <button onclick="fecharModalGps()" style="margin-top:6px; background:none; border:none; color:var(--text-muted); font-size:0.78rem; font-weight:700; cursor:pointer;">
@@ -550,24 +555,24 @@
   <div id="modalSenhaAdmin" class="modal-backdrop" style="display:none; z-index:1000200;">
     <div class="modal-card" style="max-width:380px;text-align:left; position:relative; z-index:1000201;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <h3 style="color:var(--primary);font-size:1.05rem;font-weight:800;">🔑 Alterar senha</h3>
-        <span onclick="fecharModalSenhaAdmin()" style="cursor:pointer;color:var(--text-muted);font-weight:bold;">✕</span>
+        <h3 style="color:var(--primary);font-size:1.05rem;font-weight:800;"> Alterar senha</h3>
+        <span onclick="fecharModalSenhaAdmin()" style="cursor:pointer;color:var(--text-muted);font-weight:bold;"></span>
       </div>
 
       <div id="senhaAdminContaLabel" style="font-size:.78rem;color:var(--text-muted);margin-bottom:12px;"></div>
 
       <label class="form-label-pro">Nova senha</label>
       <div class="input-group">
-        <span class="input-icon-left">🔑</span>
+        <span class="input-icon-left"></span>
         <input id="adminNovaSenha" type="password" class="input-auth com-icone-direita" placeholder="Mínimo de 6 caracteres">
-        <span class="input-icon-right" onclick="alternarSenhaAdminVisivel('adminNovaSenha', this)">👁️</span>
+        <span class="input-icon-right" onclick="alternarSenhaAdminVisivel('adminNovaSenha', this)">VER</span>
       </div>
 
       <label class="form-label-pro">Confirmar nova senha</label>
       <div class="input-group">
-        <span class="input-icon-left">🔑</span>
+        <span class="input-icon-left"></span>
         <input id="adminConfirmarSenha" type="password" class="input-auth com-icone-direita" placeholder="Digite novamente">
-        <span class="input-icon-right" onclick="alternarSenhaAdminVisivel('adminConfirmarSenha', this)">👁️</span>
+        <span class="input-icon-right" onclick="alternarSenhaAdminVisivel('adminConfirmarSenha', this)">VER</span>
       </div>
 
       <div style="font-size:.70rem;color:var(--text-muted);line-height:1.4;margin:4px 0 14px;">
@@ -588,28 +593,28 @@
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
         <div>
           <div style="font-size:.62rem;color:#34d399;font-weight:900;letter-spacing:.8px;text-transform:uppercase;">Modo Dono</div>
-          <h3 style="color:var(--text-main);font-size:1.08rem;font-weight:900;margin-top:2px;">✉️ Editar e-mail</h3>
+          <h3 style="color:var(--text-main);font-size:1.08rem;font-weight:900;margin-top:2px;"> Editar e-mail</h3>
         </div>
-        <span onclick="fecharModalEmailAdmin()" style="cursor:pointer;color:var(--text-muted);font-weight:bold;font-size:1.05rem;">✕</span>
+        <span onclick="fecharModalEmailAdmin()" style="cursor:pointer;color:var(--text-muted);font-weight:bold;font-size:1.05rem;"></span>
       </div>
 
       <div id="emailAdminContaInfo" style="padding:10px 12px;background:var(--surface-2);border:1px solid var(--surface-border);border-radius:12px;font-size:.74rem;color:var(--text-muted);line-height:1.5;margin-bottom:14px;"></div>
 
       <label class="form-label-pro">E-mail atual</label>
       <div class="input-group">
-        <span class="input-icon-left">📧</span>
+        <span class="input-icon-left"></span>
         <input id="emailAdminAtual" type="email" class="input-auth" readonly style="opacity:.78;">
       </div>
 
       <label class="form-label-pro">Novo e-mail</label>
       <div class="input-group">
-        <span class="input-icon-left">✉️</span>
+        <span class="input-icon-left"></span>
         <input id="emailAdminNovo" type="email" class="input-auth" placeholder="novoemail@exemplo.com">
       </div>
 
       <label class="form-label-pro">Confirmar novo e-mail</label>
       <div class="input-group">
-        <span class="input-icon-left">✅</span>
+        <span class="input-icon-left"></span>
         <input id="emailAdminConfirmar" type="email" class="input-auth" placeholder="Digite novamente">
       </div>
 
@@ -629,7 +634,7 @@
     <div class="modal-card" style="max-width:1100px; text-align:left; max-height:92vh; overflow-y:auto;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <h3 style="color:var(--primary); font-weight:800; font-size:1.05rem;">Central de administração</h3>
-        <button class="adm-close" onclick="fecharModalAdmin()" aria-label="Fechar painel">✕</button>
+        <button class="adm-close" onclick="fecharModalAdmin()" aria-label="Fechar painel"></button>
       </div>
       
       <div id="areaLoginAdmin">
@@ -642,9 +647,9 @@
         <p class="adm-subheading">Contas, assinaturas e operações em um só lugar.</p><div class="adm-metrics"><div class="adm-metric"><span>Faturamento registrado</span><strong id="txtTotalFaturamento">R$ 0,00</strong></div><div class="adm-metric"><span>Pagantes ativos</span><strong id="txtTotalPagantesAtivos">0</strong></div><div class="adm-metric"><span>Acessos vitalícios</span><strong id="txtAdminVitalicios">0</strong></div><div class="adm-metric"><span>Contas expiradas</span><strong id="txtAdminExpirados">0</strong></div></div>
         <!-- BUSCA RÁPIDA E EXPORTAÇÃO -->
         <div style="display:flex; gap:6px; margin-bottom:10px;">
-          <input type="text" id="buscaAdminUser" placeholder="🔍 Buscar por WhatsApp..." oninput="filtrarListaAdminLocal()" class="input-auth" style="padding-left:14px; flex:1; font-size:0.8rem; margin-bottom:0;">
+          <input type="text" id="buscaAdminUser" placeholder=" Buscar por WhatsApp..." oninput="filtrarListaAdminLocal()" class="input-auth" style="padding-left:14px; flex:1; font-size:0.8rem; margin-bottom:0;">
           <button onclick="exportarRelatorioCSV()" class="btn-action-primary" style="width:auto; padding:0 10px; font-size:0.75rem; margin-bottom:0; background:var(--surface-2); border:1px solid var(--surface-border);">
-            📥 CSV
+             CSV
           </button>
         </div>
 
@@ -655,7 +660,7 @@
           <input type="tel" id="inputClienteZap" placeholder="Ex: 11999998888" class="input-auth" style="padding-left:14px;" inputmode="numeric" pattern="[0-9]*" autocomplete="tel-national" oninput="normalizarCampoTelefone(this)" onblur="validarCampoTelefone(this)">
 
           <div style="padding:10px 12px;border-radius:10px;background:rgba(16,185,129,.08);border:1px solid rgba(52,211,153,.18);font-size:.68rem;color:var(--text-muted);line-height:1.45;">
-            🔐 A senha não é mais definida pelo Modo Dono. A conta precisa ser criada pelo usuário no acesso seguro; aqui você apenas libera ou renova o período.
+             A senha não é mais definida pelo Modo Dono. A conta precisa ser criada pelo usuário no acesso seguro; aqui você apenas libera ou renova o período.
           </div>
 
           <label class="form-label-pro">Duração do acesso</label><p class="adm-subheading">Escolha 30 dias para Mensal, 90 para Trimestral ou o atalho Vitalício. Outros valores ficam em Outros acessos.</p>
@@ -695,10 +700,10 @@
 
           <div style="display:flex; gap:6px; margin-top:4px;">
             <button onclick="salvarBroadcastGlobal(true)" class="btn-action-primary" style="background:#f59e0b; color:#000;">
-              📢 Publicar Aviso
+               Publicar Aviso
             </button>
             <button onclick="salvarBroadcastGlobal(false)" class="btn-action-primary" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid #ef4444;">
-              ✕ Apagar
+               Apagar
             </button>
           </div>
         </div>
@@ -709,7 +714,7 @@
 
   <div class="top-nav" id="elTopNav">
     <button class="nav-btn" id="btnMenuReal" onclick="toggleSidebar()">
-      <span>☰</span> <span data-i18n="menu">Menu</span>
+      <span aria-hidden="true"></span> <span data-i18n="menu">Menu</span>
     </button>
     <span class="access-badge" id="diasRestantes">Acesso Ativo</span>
   </div>
@@ -717,59 +722,201 @@
   <div class="drawer-mask" id="overlay" onclick="toggleSidebar()"></div>
 
   <div class="drawer-panel" id="sidebar">
-    <div style="font-weight:900; font-size:1.05rem; margin-bottom:2px; color:var(--text-main);">PACOTE É MATO</div>
-    <div style="font-size:0.68rem; color:#34d399; font-weight:800; margin-bottom:16px;" data-i18n="brand_subtitle">Plataforma de Logística</div>
-
-    <button class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); margin-bottom:10px;" onclick="abrirTutorialVideo(); toggleSidebar();">
-      ▶️ <span>Vídeo Tutorial</span>
-    </button>
-
-    <button class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); margin-bottom:14px;" onclick="abrirModalHistorico(); toggleSidebar();">
-      📊 <span>Histórico de Rotas</span>
-    </button>
-
-    <div style="margin-bottom:16px;">
-      <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" style="text-decoration:none;">
-        <button class="btn-action-primary" id="btnSuporteSidebar" style="background: linear-gradient(135deg, #059669, #10b981); margin-bottom:0; font-size:0.82rem; padding:10px;">
-          💬 Suporte
-        </button>
-      </a>
-    </div>
-
-    <div style="margin-bottom:14px;">
-      <label style="font-size:0.68rem; font-weight:800; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">🎨 <span data-i18n="theme_label">Tema de Cor</span></label>
-      <div class="segmented-control-grid3" id="controlThemeReal">
-        <button class="segmented-btn active" id="theme_black_Preto" onclick="mudarTema('black_Preto')">Preto</button>
-        <button class="segmented-btn" id="theme_Branco" onclick="mudarTema('Branco')">Branco</button>
-        <button class="segmented-btn" id="theme_gray" onclick="mudarTema('gray')">Cinza</button>
-      </div>
-    </div>
-
-    <div style="margin-bottom:14px;">
-      <label style="font-size:0.68rem;font-weight:800;color:var(--text-muted);text-transform:uppercase;display:block;margin-bottom:4px;">
-        Voz
-      </label>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface-2);padding:4px;border-radius:12px;border:1px solid var(--surface-border);">
-        <button class="segmented-btn active" id="voice_navegacao_feminina" onclick="salvarVoz('navegacao_feminina', true)">
-          🗣️ Voz Navegação
-        </button>
-        <button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo', false)" style="color:#ef4444;">
-          🔇 Silencioso
-        </button>
-      </div>
-    </div>
-
-    <div style="margin-top:24px;">
-      <button onclick="zerarRota()" class="btn-action-primary" style="background:var(--surface-2); color:var(--text-main); border:1px solid var(--surface-border); font-size:0.8rem; margin-bottom:6px;">
-        🔄 <span data-i18n="reset_route">Zerar Bipagens</span>
-      </button>
-      <button onclick="sairDoApp()" class="btn-action-primary" style="background:rgba(220, 38, 38, 0.15); color:#ef4444; border:1px solid rgba(220, 38, 38, 0.3); font-size:0.8rem;">
-        🔒 <span data-i18n="logout">Desconectar Conta</span>
-      </button>
+    <div style="font-weight:900;font-size:1.05rem;margin-bottom:2px;color:var(--text-main);">PACOTE É MATO</div>
+    <div style="font-size:.68rem;color:#34d399;font-weight:800;margin-bottom:12px;">Plataforma de Logística</div>
+    <nav class="sidebar-nav" aria-label="Navegação principal">
+      <button type="button" data-pemato-nav="inicio">Início</button>
+      <button type="button" data-pemato-nav="roteirizacao">Roteirização</button>
+      <button type="button" data-pemato-nav="bipagem">Bipagem</button>
+      <div class="sidebar-separator"></div>
+      <button type="button" data-pemato-nav="historico">Histórico de rotas</button>
+      <button type="button" data-pemato-nav="configuracoes">Configurações</button>
+      <div class="sidebar-separator"></div>
+      <button type="button" onclick="abrirTutorialVideo(); PacoteEMatoAppShell.fecharSidebar();">Vídeo tutorial</button>
+      <a href="termos-de-uso.html" target="_blank" rel="noopener">Termos de uso</a>
+      <a href="politica-privacidade.html" target="_blank" rel="noopener">Política de privacidade</a>
+      <a href="licencas.html" target="_blank" rel="noopener">Licenças</a>
+    </nav>
+    <div class="sidebar-version">Versão 4 corrigida</div>
+    <div style="display:grid;gap:7px;margin-top:10px">
+      <a href="https://wa.me/5511990059547?text=Ol%C3%A1%2C+preciso+de+suporte+no+app+Pacote+%C3%89+Mato" style="text-decoration:none"><button class="pemato-secondary" style="width:100%" type="button">Suporte</button></a>
+      <button onclick="zerarRota()" class="pemato-secondary" type="button">Zerar bipagens</button>
+      <button onclick="sairDoApp()" class="pemato-danger" type="button">Desconectar conta</button>
     </div>
   </div>
 
-  <div class="container">
+  <main id="moduloInicio" class="pemato-module">
+    <div class="module-head">
+      <div>
+        <div class="module-kicker">Painel operacional</div>
+        <h1 class="module-title">Início</h1>
+        <p class="module-copy">Prepare a rota, faça a conferência dos pacotes e acompanhe a operação sem misturar planejamento com bipagem.</p>
+      </div>
+    </div>
+    <div class="home-grid">
+      <section class="home-panel">
+        <div id="homeNoRoute">
+          <div class="module-kicker">Nenhuma rota ativa</div>
+          <h2 style="margin:6px 0 5px;font-size:1rem;color:var(--text-main)">Comece pela Roteirização</h2>
+          <p class="module-copy">Importe uma planilha, valide os endereços e calcule a ordem pelas ruas reais antes de iniciar a operação.</p>
+        </div>
+        <div id="homeActiveRouteCard" class="home-route-card">
+          <div class="home-route-head">
+            <div><div class="module-kicker">Rota ativa</div><strong id="homeRouteName">Rota</strong></div>
+            <span class="home-route-status" id="homeRouteStatus">Em planejamento</span>
+          </div>
+          <div class="home-metrics">
+            <div class="home-metric"><strong id="homeRouteStops">0</strong><span>Paradas</span></div>
+            <div class="home-metric"><strong id="homeRoutePackages">0</strong><span>Pacotes</span></div>
+            <div class="home-metric"><strong id="homeRouteDistance">—</strong><span>Distância</span></div>
+            <div class="home-metric"><strong id="homeRouteTime">—</strong><span>Tempo total</span></div>
+            <div class="home-metric"><strong id="homeRouteProgress">0 de 0</strong><span>Entregues</span></div>
+          </div>
+        </div>
+        <div class="home-actions">
+          <button class="pemato-primary" id="homeOpenRouting" type="button">Abrir Roteirização</button>
+          <button class="pemato-secondary" id="homeOpenScanning" type="button">Abrir Bipagem</button>
+        </div>
+      </section>
+      <aside class="home-panel quick-actions">
+        <button class="quick-card" type="button" data-pemato-nav="roteirizacao"><strong>Planejar rota</strong><span>Importar XLSX, localizar paradas, editar e otimizar.</span></button>
+        <button class="quick-card" type="button" data-pemato-nav="bipagem"><strong>Conferir pacotes</strong><span>Usar a rota ativa ou continuar com o PDF já suportado.</span></button>
+        <button class="quick-card" type="button" data-pemato-nav="historico"><strong>Histórico de rotas</strong><span>Consultar rotas realizadas, entregues e não entregues.</span></button>
+      </aside>
+    </div>
+  </main>
+
+  <main id="moduloRoteirizacao" class="pemato-module" style="display:none;">
+    <div class="module-head">
+      <div>
+        <div class="module-kicker">Planejamento</div>
+        <h1 class="module-title">Roteirização</h1>
+        <p class="module-copy">Importe ou crie paradas, valide coordenadas e calcule uma ordem eficiente usando a rede viária real.</p>
+      </div>
+    </div>
+
+    <div class="routing-toolbar">
+      <button id="routingImportBtn" class="pemato-primary" type="button">Importar XLSX</button>
+      <input id="routingXlsxInput" type="file" accept=".xlsx,.xls,.csv" hidden>
+      <button id="routingUseLegacyBtn" class="pemato-secondary" type="button">Usar rota da Bipagem</button>
+      <button id="routingAddStopBtn" class="pemato-secondary" type="button">Adicionar parada</button>
+    </div>
+    <div id="routingImportStatus" class="routing-import-status">A planilha pode conter endereço, número, complemento, observação e códigos de pacote.</div>
+
+    <section class="routing-config">
+      <div class="routing-config-group">
+        <label>Ponto de partida</label>
+        <div class="routing-start-row">
+          <input id="routingStartAddress" class="pemato-field" type="text" placeholder="Endereço de partida">
+          <button id="routingLocateStartBtn" class="pemato-secondary" type="button">Localizar</button>
+          <button id="routingUseLocationBtn" class="pemato-secondary" type="button">Minha localização</button>
+          <button id="routingUseSavedStartBtn" class="pemato-secondary" type="button">Usar salvo</button>
+          <button id="routingSaveStartBtn" class="pemato-secondary" type="button">Salvar ponto</button>
+        </div>
+        <div id="routingStartStatus" class="routing-start-status">Defina o ponto de partida</div>
+      </div>
+      <div class="routing-config-group">
+        <label>Veículo</label>
+        <select id="routingVehicle" class="pemato-field"><option value="carro">Carro</option><option value="moto">Moto</option><option value="caminhao">Caminhão</option></select>
+      </div>
+      <div class="routing-config-group">
+        <label>Tempo médio por parada</label>
+        <input id="routingStopMinutes" class="pemato-field" type="number" min="0" max="180" step="1" value="3">
+      </div>
+      <div class="routing-config-group">
+        <label>Retorno</label>
+        <label style="display:flex;align-items:center;gap:7px;min-height:42px;color:var(--text-main);text-transform:none"><input id="routingReturnStart" type="checkbox"> Voltar ao início</label>
+      </div>
+      <div class="routing-config-group" style="grid-column:1/-1">
+        <label>Nome da rota</label>
+        <input id="routingRouteName" class="pemato-field" type="text" placeholder="Rota de hoje">
+      </div>
+    </section>
+
+    <div class="route-metrics-strip">
+      <div class="route-metric-box"><strong id="routeMetricStops">0</strong><span>Paradas</span></div>
+      <div class="route-metric-box"><strong id="routeMetricDistance">—</strong><span>Distância</span></div>
+      <div class="route-metric-box"><strong id="routeMetricDrive">—</strong><span>Direção</span></div>
+      <div class="route-metric-box"><strong id="routeMetricStopTime">—</strong><span>Nas paradas</span></div>
+      <div class="route-metric-box"><strong id="routeMetricTotal">—</strong><span>Total</span></div>
+      <div class="route-metric-box"><strong id="routeMetricEnd">—</strong><span>Previsão de término</span></div>
+    </div>
+
+    <section id="routingWorkspace" class="routing-workspace show-map">
+      <div class="routing-head">
+        <div><strong>Mapa e paradas</strong><div id="routingOptimizedFlag" class="routing-optimized-flag">Rota em planejamento</div></div>
+        <div class="routing-mobile-switch"><button id="routingMobileMapTab" class="active" type="button">Mapa</button><button id="routingMobileListTab" type="button">Paradas</button></div>
+      </div>
+      <div class="routing-body">
+        <aside class="routing-list-pane">
+          <div class="routing-list-summary">
+            <div><strong id="routingImportedCount">0</strong><span>Importadas</span></div>
+            <div><strong id="routingLocatedCount">0</strong><span>Localizadas</span></div>
+            <div><strong id="routingProblemCount">0</strong><span>Precisam correção</span></div>
+          </div>
+          <div id="routePlannerStops" class="routing-stop-list"></div>
+        </aside>
+        <div class="routing-map-pane">
+          <div class="routing-map-tools"><button id="routingFitMapBtn" type="button">Ver todas</button></div>
+          <div id="mapaRoteirizacao"></div>
+          <div id="mapaRoteirizacaoFallback" class="route-map-fallback"></div>
+          <aside id="routingSelectedStopCard" class="routing-selected-stop" style="display:none">
+            <div class="routing-selected-stop-order" id="routingSelectedStopOrder">1</div>
+            <div class="routing-selected-stop-body">
+              <strong id="routingSelectedStopAddress">Parada selecionada</strong>
+              <span id="routingSelectedStopComplement"></span>
+              <small id="routingSelectedStopMeta"></small>
+            </div>
+            <button id="routingSelectedStopEdit" class="pemato-secondary" type="button">Editar</button>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <div class="routing-actions-bottom">
+      <button id="routingGeocodeBtn" class="pemato-secondary" type="button">Validar endereços</button>
+      <button id="routingOptimizeBtn" class="pemato-primary" type="button">Otimizar rota</button>
+      <button id="routingInvertBtn" class="pemato-secondary" type="button">Inverter rota</button>
+      <button id="routingExportPdfBtn" class="pemato-secondary" type="button">Exportar PDF</button>
+      <button id="routingStartNavBtn" class="pemato-primary" type="button">Iniciar navegação</button>
+    </div>
+  </main>
+
+  <main id="moduloNavegacao" class="pemato-module" style="display:none;">
+    <div class="module-head"><div><div class="module-kicker">Deslocamento</div><h1 class="module-title">Navegação</h1><p class="module-copy">Mapa 2D, posição GPS, próxima parada e recálculo da rota ativa.</p></div></div>
+    <div class="navigation-layout">
+      <div class="navigation-map"><div id="mapaNavegacao"></div></div>
+      <aside class="navigation-panel">
+        <section class="nav-next-card"><div class="eyebrow">PRÓXIMA PARADA</div><h3 id="navNextAddress">Aguardando rota</h3><p id="navNextComplement"></p></section>
+        <section class="nav-stats"><div class="nav-stat"><strong id="navDistanceNext">—</strong><span>Até a próxima</span></div><div class="nav-stat"><strong id="navEtaNext">—</strong><span>ETA próxima</span></div><div class="nav-stat"><strong id="navRemaining">0</strong><span>Restantes</span></div><div class="nav-stat"><strong id="navRouteTotal">—</strong><span>Rota restante</span></div><div class="nav-stat"><strong id="navRouteTime">—</strong><span>Tempo de direção</span></div></section>
+        <div class="nav-actions"><button id="navDeliveredBtn" class="pemato-primary" type="button">Marcar entregue</button><button id="navNotDeliveredBtn" class="pemato-danger" type="button">Não entregue</button><button id="navAdvanceBtn" class="pemato-secondary" type="button">Próxima parada</button><button id="navRecalculateBtn" class="pemato-secondary" type="button">Recalcular</button><button id="navOpenWazeBtn" class="pemato-secondary" type="button">Abrir Waze</button><button id="navOpenGoogleBtn" class="pemato-secondary" type="button">Abrir Google Maps</button><button id="navEndBtn" class="pemato-danger wide" type="button">Encerrar navegação</button></div>
+        <section id="navFailurePanel" class="nav-failure-panel" style="display:none"><h4>Registrar não entrega</h4><label>Motivo<select id="navFailureReason" class="pemato-field"><option value="cliente_ausente">Cliente ausente</option><option value="endereco_incorreto">Endereço incorreto</option><option value="estabelecimento_fechado">Estabelecimento fechado</option><option value="recusado">Recusado</option><option value="outro">Outro</option></select></label><label>Observação<textarea id="navFailureNote" class="pemato-field" rows="2" placeholder="Detalhes opcionais"></textarea></label><div class="nav-failure-actions"><button id="navFailureConfirmBtn" class="pemato-danger" type="button">Confirmar não entrega</button><button id="navFailureCancelBtn" class="pemato-secondary" type="button">Cancelar</button></div></section>
+        <section class="nav-instructions-card"><h4>Instruções da rota</h4><div id="navInstructions"></div></section>
+      </aside>
+    </div>
+  </main>
+
+  <main id="moduloHistorico" class="pemato-module" style="display:none;">
+    <div class="module-head"><div><div class="module-kicker">Consulta</div><h1 class="module-title">Histórico de rotas</h1><p class="module-copy">Rotas salvas no armazenamento persistente da nova arquitetura, com espelhamento no Firestore quando permitido.</p></div></div>
+    <div class="routing-toolbar"><select id="historyFilter" class="pemato-field" style="max-width:180px"><option value="semana">Esta semana</option><option value="data">Uma data</option><option value="periodo">Período</option><option value="todos">Todas</option></select><input id="historyDate" class="pemato-field" type="date" style="max-width:170px"><input id="historyStart" class="pemato-field" type="date" style="max-width:170px"><input id="historyEnd" class="pemato-field" type="date" style="max-width:170px"><button id="historyRefreshBtn" class="pemato-secondary" type="button">Atualizar</button><button id="historyLegacyBtn" class="pemato-secondary" type="button">Histórico anterior</button></div>
+    <div id="historyRoutesList" class="history-routes-list"></div>
+  </main>
+
+  <main id="moduloConfiguracoes" class="pemato-module" style="display:none;">
+    <div class="module-head"><div><div class="module-kicker">Preferências</div><h1 class="module-title">Configurações</h1><p class="module-copy">Preferências operacionais que podem ser reutilizadas nas próximas rotas.</p></div></div>
+    <div class="settings-grid">
+      <section class="settings-card"><label>Navegação padrão</label><select id="settingsNavigation" class="pemato-field"><option value="pacote_emato">Pacote É Mato</option><option value="waze">Waze</option><option value="google">Google Maps</option></select></section>
+      <section class="settings-card"><label>Veículo</label><select id="settingsVehicle" class="pemato-field"><option value="carro">Carro</option><option value="moto">Moto</option><option value="caminhao">Caminhão</option></select></section>
+      <section class="settings-card"><label>Tempo médio por parada (minutos)</label><input id="settingsStopMinutes" class="pemato-field" type="number" min="0" max="180" value="3"></section>
+      <section class="settings-card"><label>Ponto inicial salvo</label><input id="settingsStartPoint" class="pemato-field" type="text" readonly placeholder="Defina pela Roteirização"></section>
+      <section class="settings-card"><label>Tema</label><div class="segmented-control-grid3"><button class="segmented-btn active" id="theme_black_Preto" onclick="mudarTema('black_Preto')">Preto</button><button class="segmented-btn" id="theme_Branco" onclick="mudarTema('Branco')">Branco</button><button class="segmented-btn" id="theme_gray" onclick="mudarTema('gray')">Cinza</button></div></section>
+      <section class="settings-card"><label>Voz</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px"><button class="segmented-btn active" id="voice_navegacao_feminina" onclick="salvarVoz('navegacao_feminina', true)">Navegação</button><button class="segmented-btn" id="voice_mudo" onclick="salvarVoz('mudo', false)">Silencioso</button></div></section>
+    </div>
+    <div style="margin-top:12px"><button id="settingsSaveBtn" class="pemato-primary" type="button">Salvar configurações</button></div>
+  </main>
+
+
+  <div class="container pemato-module" id="moduloBipagem" style="display:none;">
     <!-- BANNER DE AVISO GERAL (BROADCAST) COM ANIMAÇÃO -->
     <div id="bannerBroadcast"></div>
     
@@ -805,8 +952,14 @@
         ← Voltar ao início
       </button>
       <button type="button" class="toolbar-rota-btn" onclick="abrirModalRota()">
-        👀 Visualizar Paradas
+       Visualizar Paradas
       </button>
+    </div>
+
+    <div id="activeRouteBipagemCard" class="home-panel" style="display:none;margin-bottom:12px;padding:12px">
+      <div class="home-route-head"><div><div class="module-kicker">Rota ativa</div><strong id="activeRouteBipagemName">Rota</strong></div></div>
+      <div id="activeRouteBipagemMeta" class="module-copy" style="margin-top:5px"></div>
+      <button id="activeRouteBipagemUseBtn" class="pemato-primary" type="button" style="margin-top:9px">Usar rota ativa na Bipagem</button>
     </div>
 
     <div class="upload-section" id="elSecaoUpload">
@@ -814,7 +967,7 @@
       <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:4px;" data-i18n="load_pdf_subtitle">Importe a folha da sua rota para sincronizar as paradas</div>
       
       <button class="btn-upload-trigger" onclick="document.getElementById('pdfInput').click()" id="btnUploadTxt" style="margin-bottom:8px;">
-        📄 Escolher Arquivo PDF
+       Escolher Arquivo PDF
       </button>
 <button id="btnVerParadasModal" type="button" style="display:none;" onclick="abrirModalRota()"></button>
 <input type="file" id="pdfInput" accept="application/pdf" style="display:none;">
@@ -823,7 +976,7 @@
     
 
 <div class="card-retomar-rota" id="cardRetomarRota">
-      <div style="font-size:0.75rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found">📂 ROTA ANTERIOR IDENTIFICADA</div>
+      <div style="font-size:0.75rem; font-weight:800; color:#34d399; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;" data-i18n="saved_route_found"> ROTA ANTERIOR IDENTIFICADA</div>
       <div id="txtNomeRotaSalva" style="font-size:0.88rem; font-weight:900; color:#fff; margin-bottom:8px;">Rota em andamento</div>
       <button class="btn-action-primary" style="margin-bottom:0; padding:10px;" onclick="retomarRotaAnterior()">
          <span data-i18n="resume_route">Voltar para rota anterior</span>
@@ -863,43 +1016,12 @@
       </div>
 
       <div class="home-route-summary-footer" id="resumoRotaRodape">
-        🟢 Rota em andamento
+       Rota em andamento
       </div>
     </div>
 
     <div id="areaExecucao" style="display:none;">
-      <section id="routeWorkspace" class="route-workspace view-mapa" style="display:none;" aria-label="Mapa e paradas da rota">
-        <div class="route-workspace-header">
-          <div class="route-workspace-title">
-            <span class="route-workspace-kicker">ROTA ATUAL</span>
-            <strong>Mapa e paradas</strong>
-            <span id="routeGeoStatus" class="route-geo-status">Aguardando rota</span>
-          </div>
-
-          <div class="route-view-switch" role="tablist" aria-label="Visualização da rota">
-            <button id="routeTabMapa" class="active" type="button" onclick="PacoteEMatoMapa.alternarPainel('mapa')">Mapa</button>
-            <button id="routeTabParadas" type="button" onclick="PacoteEMatoMapa.alternarPainel('lista')">Paradas</button>
-          </div>
-        </div>
-
-        <div class="route-workspace-body">
-          <aside class="route-stops-pane" aria-label="Lista de paradas">
-            <div class="route-stops-head">
-              <strong>Paradas físicas</strong>
-              <span id="routeStopsSummary">0 de 0 concluídas</span>
-            </div>
-            <div id="listaParadasMapa" class="route-stops-list"></div>
-          </aside>
-
-          <div class="route-map-pane" aria-label="Mapa da rota">
-            <div id="mapaRota"></div>
-            <div id="mapaFallback" class="route-map-fallback"></div>
-            <div id="mapaSelectedSheet" class="map-selected-sheet" aria-live="polite"></div>
-          </div>
-        </div>
-      </section>
-
-      <div class="metrics-board" id="elMetricsBoard">
+<div class="metrics-board" id="elMetricsBoard">
         <div class="metric-cell">
           <div class="metric-val" id="valPacotes">0 / 0</div>
           <div class="metric-lbl" data-i18n="metric_scanned">Bipados</div>
@@ -917,7 +1039,7 @@
       <!-- CARD DE RESULTADO COM PARADA E ENDEREÇO EMBAIXO -->
       <div class="result-panel" id="cardResult">
         <div class="stop-number" id="resStop">P1</div>
-        <div class="stop-address" id="resEndereco">📍 Carregando endereço...</div>
+        <div class="stop-address" id="resEndereco"> Carregando endereço...</div>
         <div class="stop-package-id" id="resPacote">Pacote: BR...</div>
 
         <div class="route-focus-card" id="progressoParadaAtual" style="display:none;">
@@ -950,37 +1072,71 @@
     </div>
   </div>
 
+  <div id="routeStopEditorModal" class="modal-backdrop" style="display:none;z-index:12000">
+    <div class="route-editor-modal-card">
+      <div class="route-editor-modal-head"><h3 id="routeStopEditorTitle">Editar parada</h3><button id="routeStopEditorClose" class="route-editor-close" type="button" aria-label="Fechar">×</button></div>
+      <div class="route-editor-grid">
+        <div class="route-editor-double"><label class="form-label-pro">Endereço / logradouro</label><input id="routeEdit_logradouro" class="pemato-field" type="text"></div>
+        <div><label class="form-label-pro">Número</label><input id="routeEdit_numero" class="pemato-field" type="text"></div>
+        <div><label class="form-label-pro">Complemento</label><input id="routeEdit_complemento" class="pemato-field" type="text"></div>
+        <div><label class="form-label-pro">Apartamento</label><input id="routeEdit_apartamento" class="pemato-field" type="text"></div>
+        <div><label class="form-label-pro">Bloco</label><input id="routeEdit_bloco" class="pemato-field" type="text"></div>
+        <div><label class="form-label-pro">Sala</label><input id="routeEdit_sala" class="pemato-field" type="text"></div>
+        <div><label class="form-label-pro">Loja</label><input id="routeEdit_loja" class="pemato-field" type="text"></div>
+        <div><label class="form-label-pro">Bairro</label><input id="routeEdit_bairro" class="pemato-field" type="text"></div>
+        <div><label class="form-label-pro">Cidade</label><input id="routeEdit_cidade" class="pemato-field" type="text"></div>
+        <div><label class="form-label-pro">Estado</label><input id="routeEdit_estado" class="pemato-field" type="text"></div>
+        <div><label class="form-label-pro">CEP</label><input id="routeEdit_cep" class="pemato-field" type="text"></div>
+        <div class="route-editor-wide"><label class="form-label-pro">Observação</label><textarea id="routeEdit_observacao" class="pemato-field" rows="2"></textarea></div>
+        <div class="route-editor-wide"><label class="form-label-pro">Códigos de pacote (um por linha)</label><textarea id="routeEdit_pacotes" class="pemato-field" rows="3"></textarea></div>
+        <div class="route-editor-wide route-editor-status-grid">
+          <div><label class="form-label-pro">Status</label><select id="routeEdit_status" class="pemato-field"><option value="pendente">Pendente</option><option value="entregue">Entregue</option><option value="nao_entregue">Não entregue</option></select></div>
+          <div><label class="form-label-pro">Motivo de não entrega</label><select id="routeEdit_motivo" class="pemato-field"><option value="">Selecione</option><option value="cliente_ausente">Cliente ausente</option><option value="endereco_incorreto">Endereço incorreto</option><option value="estabelecimento_fechado">Estabelecimento fechado</option><option value="recusado">Recusado</option><option value="outro">Outro</option></select></div>
+        </div>
+        <div class="route-editor-wide"><label class="form-label-pro">Observação da não entrega</label><textarea id="routeEdit_observacaoNaoEntrega" class="pemato-field" rows="2"></textarea></div>
+      </div>
+      <div class="route-editor-footer"><button id="routeStopEditorCancel" class="pemato-secondary" type="button">Cancelar</button><button id="routeStopEditorSave" class="pemato-primary" type="button">Salvar parada</button></div>
+    </div>
+  </div>
+
+  <div id="routeHistoryDetailModal" class="modal-backdrop" style="display:none;z-index:12000"><div class="route-editor-modal-card"><div class="route-editor-modal-head"><h3>Detalhes da rota</h3><button id="routeHistoryDetailClose" class="route-editor-close" type="button">×</button></div><div id="routeHistoryDetailBody"></div></div></div>
+
+
+  <div id="routeReoptDecisionModal" class="modal-backdrop" style="display:none;z-index:12100">
+    <div class="route-decision-card" role="dialog" aria-modal="true" aria-labelledby="routeReoptDecisionTitle">
+      <div class="module-kicker">Atualização da rota</div>
+      <h3 id="routeReoptDecisionTitle">Rota alterada</h3>
+      <p id="routeReoptDecisionText">Escolha como deseja atualizar a rota.</p>
+      <div class="route-decision-actions">
+        <button id="routeKeepOrderBtn" class="pemato-secondary" type="button">Manter ordem atual</button>
+        <button id="routeReoptBtn" class="pemato-primary" type="button">Otimizar novamente</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/state.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/suporte.js"></script>
+  <script src="js/diagnosticos/diagnostico-rota.js"></script>
+  <script src="js/diagnosticos/diagnostico-ui.js"></script>
+  <script src="js/paradas/compatibilidade-enderecos.js"></script>
 
-<script src="js/suporte.js"></script>
+  <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+  <script src="js/mapa/config.js"></script>
+  <script src="js/mapa/cache-geocodificacao.js"></script>
+  <script src="js/mapa/geocodificacao.js"></script>
+  <script src="js/mapa/mapa.js"></script>
 
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- Diagnósticos preservados, agora consolidados por responsabilidade -->
-<script src="js/diagnosticos/diagnostico-rota.js"></script>
-<script src="js/diagnosticos/diagnostico-ui.js"></script>
-
-<!-- Helpers legados de endereço preservados sem alterar o agrupamento do app.js -->
-<script src="js/paradas/compatibilidade-enderecos.js"></script>
-
-<!-- ETAPA 4: mapa + paradas + geocodificação -->
-<script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
-<script src="js/mapa/config.js"></script>
-<script src="js/mapa/cache-geocodificacao.js"></script>
-<script src="js/mapa/geocodificacao.js"></script>
-<script src="js/mapa/mapa.js"></script>
-<script src="js/mapa/integracao-rota.js"></script>
+  <script src="js/core/rota-store.js"></script>
+  <script src="js/configuracoes/configuracoes.js"></script>
+  <script src="js/importacao/xlsx.js"></script>
+  <script src="js/roteirizacao/servico-rota.js"></script>
+  <script src="js/exportacao/pdf-rota.js"></script>
+  <script src="js/roteirizacao/roteirizacao.js"></script>
+  <script src="js/historico/historico-rotas.js"></script>
+  <script src="js/bipagem/rota-ativa-bridge.js"></script>
+  <script src="js/navegacao/navegacao.js"></script>
+  <script src="js/ui/app-shell.js"></script>
 
 </body>
 </html>

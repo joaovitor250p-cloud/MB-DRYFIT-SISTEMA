@@ -357,6 +357,28 @@
     return final;
   }
 
+  async function geocodificarParada(parada) {
+    const minhaExecucao = ++execucaoAtual;
+    await geocodificarUma(parada, minhaExecucao);
+    return parada;
+  }
+
+  async function geocodificarEnderecoLivre(endereco) {
+    const texto = String(endereco || '').trim();
+    const numeros = texto.match(/\b\d+[A-Za-z]?\b/g) || [];
+    const parada = {
+      id: 'endereco-livre-' + Date.now(),
+      enderecoOriginal: texto,
+      enderecoConsulta: '',
+      numeroImovel: numeros.length ? numeros[numeros.length - 1] : '',
+      statusGeocodificacao: 'pendente',
+      latitude: null,
+      longitude: null
+    };
+    await geocodificarParada(parada);
+    return parada;
+  }
+
   function cancelar() {
     execucaoAtual++;
   }
@@ -374,6 +396,8 @@
     limparEnderecoParaConsulta,
     avaliarResultados,
     geocodificarParadas,
+    geocodificarParada,
+    geocodificarEnderecoLivre,
     resumo,
     cancelar,
     configurarEndpoint,

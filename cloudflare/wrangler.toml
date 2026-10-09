@@ -8,4 +8,4 @@ ALLOWED_ORIGINS = "https://joaovitor250p-cloud.github.io"
 
 # Nunca coloque GEOAPIFY_API_KEY aqui.
 # Configure como secret:
-# npx wrangler secret put GEOAPIFY_API_KEY --config cloudflare/wrangler.toml
+# npx wrangler secret put GEOAPIFY_API_KEY --config wrangler.toml

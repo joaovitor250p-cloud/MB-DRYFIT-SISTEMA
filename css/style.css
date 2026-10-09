@@ -2290,3 +2290,8 @@ h1,h2,h3 {
 
 /* ===== CSS ORIGINAL 29: renovacao-conta ===== */
 #avisoRenovacao{padding:16px;margin:14px 0;border:1px solid #f59e0b;border-radius:12px;background:rgba(245,158,11,.09);text-align:left;}#avisoRenovacao strong{color:#d97706;}#avisoRenovacao p{font-size:.8rem;line-height:1.5;color:var(--text-main)!important;margin:8px 0;}#avisoRenovacao button{border:0;border-radius:8px;padding:10px 12px;background:#10b981;color:#fff;font-weight:700;cursor:pointer;}
+
+/* Interface sem emojis: remove o espaço reservado de ícones antigos que ficaram vazios. */
+.input-icon-left:empty { display: none; }
+.input-group:has(.input-icon-left:empty) .input-auth { padding-left: 14px; }
+.input-icon-right { font-size: .56rem; font-weight: 900; letter-spacing: .04em; color: var(--text-muted); }

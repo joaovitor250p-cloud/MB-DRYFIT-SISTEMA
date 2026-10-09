@@ -43,28 +43,39 @@
   }
 
   LEGACY_KEYS.forEach((chave) => {
-    if (!(chave in state)) {
-      state[chave] = valorInicial(chave);
-    }
+    if (!(chave in state)) state[chave] = valorInicial(chave);
   });
 
-  if (!state.roteirizacao || typeof state.roteirizacao !== 'object') {
-    state.roteirizacao = {};
-  }
+  if (!state.roteirizacao || typeof state.roteirizacao !== 'object') state.roteirizacao = {};
 
   const roteirizacaoPadrao = {
+    rotaAtivaId: null,
+    origem: null,
+    nome: '',
     pontoInicial: null,
+    pontoFinal: null,
+    retornarAoInicio: false,
+    veiculo: 'carro',
+    modoRoteamento: 'drive',
+    tempoParadaSegundos: 180,
     paradas: [],
     ordem: [],
     paradasTravadas: [],
-    retornarAoInicio: false,
-    geometria: null,
-    distanciaTotalMetros: null,
-    duracaoTotalSegundos: null,
-    calculadoEm: null,
     paradaSelecionadaId: null,
+    geometria: null,
+    instrucoes: [],
+    pernas: [],
+    distanciaTotalMetros: null,
+    duracaoDirecaoSegundos: null,
+    duracaoParadasSegundos: null,
+    duracaoTotalSegundos: null,
+    horarioTerminoEstimado: null,
+    calculadoEm: null,
+    rotaOtimizada: false,
     mapaDisponivel: null,
-    geocodificacaoResumo: null
+    geocodificacaoResumo: null,
+    alteradoEm: null,
+    sujo: false
   };
 
   Object.keys(roteirizacaoPadrao).forEach((chave) => {
@@ -74,15 +85,26 @@
     }
   });
 
-  if (!state.navegacao || typeof state.navegacao !== 'object') {
-    state.navegacao = {
-      ativa: false,
-      paradaAtualId: null,
-      proximaParadaId: null,
-      iniciadaEm: null,
-      ultimaPosicao: null
-    };
-  }
+  if (!state.navegacao || typeof state.navegacao !== 'object') state.navegacao = {};
+  const navegacaoPadrao = {
+    ativa: false,
+    provider: 'pacote_emato',
+    paradaAtualId: null,
+    proximaParadaId: null,
+    indiceAtual: 0,
+    iniciadaEm: null,
+    ultimaPosicao: null,
+    ultimaAtualizacaoEm: null,
+    distanciaAteProximaMetros: null,
+    etaAteProximaSegundos: null,
+    recalculando: false
+  };
+  Object.keys(navegacaoPadrao).forEach((chave) => {
+    if (!(chave in state.navegacao)) state.navegacao[chave] = navegacaoPadrao[chave];
+  });
+
+  if (!state.ui || typeof state.ui !== 'object') state.ui = {};
+  if (!state.ui.moduloAtual) state.ui.moduloAtual = 'inicio';
 
   function resetarRotaLegada() {
     state.mapaRotas = {};
@@ -99,24 +121,13 @@
   }
 
   function resetarRoteirizacao() {
-    state.roteirizacao.pontoInicial = null;
-    state.roteirizacao.paradas = [];
-    state.roteirizacao.ordem = [];
-    state.roteirizacao.paradasTravadas = [];
-    state.roteirizacao.retornarAoInicio = false;
-    state.roteirizacao.geometria = null;
-    state.roteirizacao.distanciaTotalMetros = null;
-    state.roteirizacao.duracaoTotalSegundos = null;
-    state.roteirizacao.calculadoEm = null;
-    state.roteirizacao.paradaSelecionadaId = null;
-    state.roteirizacao.mapaDisponivel = null;
-    state.roteirizacao.geocodificacaoResumo = null;
-
-    state.navegacao.ativa = false;
-    state.navegacao.paradaAtualId = null;
-    state.navegacao.proximaParadaId = null;
-    state.navegacao.iniciadaEm = null;
-    state.navegacao.ultimaPosicao = null;
+    Object.keys(roteirizacaoPadrao).forEach((chave) => {
+      const valor = roteirizacaoPadrao[chave];
+      state.roteirizacao[chave] = Array.isArray(valor) ? valor.slice() : valor;
+    });
+    Object.keys(navegacaoPadrao).forEach((chave) => {
+      state.navegacao[chave] = navegacaoPadrao[chave];
+    });
     return state;
   }
 
@@ -136,10 +147,7 @@
   }
 
   function restaurarLegado(snapshot) {
-    if (!snapshot || typeof snapshot !== 'object') {
-      return state;
-    }
-
+    if (!snapshot || typeof snapshot !== 'object') return state;
     state.mapaRotas = snapshot.mapaRotas || {};
     state.stopCorrespondente = snapshot.stopCorrespondente || {};
     state.nomeExibicao = snapshot.nomeExibicao || {};
@@ -155,28 +163,20 @@
 
   LEGACY_KEYS.forEach((chave) => {
     const descritorExistente = Object.getOwnPropertyDescriptor(global, chave);
-
     if (descritorExistente && descritorExistente.configurable === false) {
       throw new Error(`Pacote É Mato: não foi possível vincular o estado global "${chave}".`);
     }
-
     Object.defineProperty(global, chave, {
       configurable: true,
       enumerable: true,
-      get() {
-        return state[chave];
-      },
-      set(valor) {
-        state[chave] = valor;
-      }
+      get() { return state[chave]; },
+      set(valor) { state[chave] = valor; }
     });
   });
 
   global.appState = state;
   global.PacoteEMatoState = Object.freeze({
-    getState() {
-      return state;
-    },
+    getState() { return state; },
     resetarRotaLegada,
     resetarRoteirizacao,
     snapshotLegado,

@@ -96,7 +96,7 @@ function tocarIntroPs2Audio() {
         most_popular: "Popular",
         generate_pix: "Gerar Pagamento Pix",
         secure_payment: "Pagamento Seguro Pix",
-        waiting_confirmation: "Aguardando confirmação... ⏳",
+        waiting_confirmation: "Aguardando confirmação... ",
         auto_unlock: "O sistema destrava sozinho após o pagamento.",
         copy_pix: "Copiar Código Pix",
         cancel: "Cancelar",
@@ -107,7 +107,7 @@ function tocarIntroPs2Audio() {
         reset_route: "Zerar Bipagens",
         logout: "Desconectar Conta",
         logistics_system: "SISTEMA INTELIGENTE DE LOGÍSTICA",
-        saved_route_found: "📂 ROTA ANTERIOR IDENTIFICADA",
+        saved_route_found: " ROTA ANTERIOR IDENTIFICADA",
         resume_route: "Retomar Rota Onde Parei",
         load_pdf_title: "Carregar Rota em PDF",
         load_pdf_subtitle: "Importe a folha da sua rota para sincronizar as paradas",
@@ -118,9 +118,9 @@ function tocarIntroPs2Audio() {
         cam_flip: "Virar",
         flash_txt: "Flash",
         manual_placeholder: "Digite o código manualmente...",
-        same_address_alert: "⚠️ MESMO ENDEREÇO! Pacotes neste ponto: ",
-        pdf_erro: "❌ Não consegui ler este PDF. Verifique se o arquivo não está corrompido e tente novamente.",
-        login_bloqueado: "🔒 Muitas tentativas erradas. Aguarde 30 segundos e tente de novo.",
+        same_address_alert: " MESMO ENDEREÇO! Pacotes neste ponto: ",
+        pdf_erro: " Não consegui ler este PDF. Verifique se o arquivo não está corrompido e tente novamente.",
+        login_bloqueado: " Muitas tentativas erradas. Aguarde 30 segundos e tente de novo.",
         tutorial_btn: "Como Usar (Tutorial Interativo)"
       },
       es: {
@@ -142,7 +142,7 @@ function tocarIntroPs2Audio() {
         most_popular: "Popular",
         generate_pix: "Generar Pago Pix",
         secure_payment: "Pago Seguro Pix",
-        waiting_confirmation: "Esperando confirmación... ⏳",
+        waiting_confirmation: "Esperando confirmación... ",
         auto_unlock: "El sistema se desbloquea solo tras el pago.",
         copy_pix: "Copiar Código Pix",
         cancel: "Cancelar",
@@ -153,7 +153,7 @@ function tocarIntroPs2Audio() {
         reset_route: "Reiniciar Escaneos",
         logout: "Cerrar Sesión",
         logistics_system: "SISTEMA INTELIGENTE DE LOGÍSTICA",
-        saved_route_found: "📂 ROTA ANTERIOR ENCONTRADA",
+        saved_route_found: " ROTA ANTERIOR ENCONTRADA",
         resume_route: "Reanudar Ruta Donde Me Quedé",
         load_pdf_title: "Cargar Ruta en PDF",
         load_pdf_subtitle: "Importa la hoja de tu rota para sincronizar las paradas",
@@ -164,9 +164,9 @@ function tocarIntroPs2Audio() {
         cam_flip: "Girar",
         flash_txt: "Flash",
         manual_placeholder: "Escribe el código manualmente...",
-        same_address_alert: "⚠️ ¡MISMA DIRECCIÓN! Paquetes en este punto: ",
-        pdf_erro: "❌ No pude leer este PDF. Verifica que el archivo no esté dañado e intenta de nuevo.",
-        login_bloqueado: "🔒 Demasiados intentos fallidos. Espera 30 segundos e intenta de nuevo.",
+        same_address_alert: " ¡MISMA DIRECCIÓN! Paquetes en este punto: ",
+        pdf_erro: " No pude leer este PDF. Verifica que el archivo no esté dañado e intenta de nuevo.",
+        login_bloqueado: " Demasiados intentos fallidos. Espera 30 segundos e intenta de nuevo.",
         tutorial_btn: "Cómo Usar (Tutorial)"
       },
       en: {
@@ -188,7 +188,7 @@ function tocarIntroPs2Audio() {
         most_popular: "Popular",
         generate_pix: "Generate Pix Payment",
         secure_payment: "Secure Pix Payment",
-        waiting_confirmation: "Waiting for confirmation... ⏳",
+        waiting_confirmation: "Waiting for confirmation... ",
         auto_unlock: "The system unlocks automatically after payment.",
         copy_pix: "Copy Pix Code",
         cancel: "Cancel",
@@ -199,7 +199,7 @@ function tocarIntroPs2Audio() {
         reset_route: "Reset Scans",
         logout: "Log Out",
         logistics_system: "SMART LOGISTICS SYSTEM",
-        saved_route_found: "📂 PREVIOUS ROUTE FOUND",
+        saved_route_found: " PREVIOUS ROUTE FOUND",
         resume_route: "Resume Route Where I Left",
         load_pdf_title: "Upload Route PDF",
         load_pdf_subtitle: "Import your route sheet to sync stops",
@@ -210,9 +210,9 @@ function tocarIntroPs2Audio() {
         cam_flip: "Flip",
         flash_txt: "Flash",
         manual_placeholder: "Type code manually...",
-        same_address_alert: "⚠️ SAME ADDRESS! Packages at this stop: ",
+        same_address_alert: " SAME ADDRESS! Packages at this stop: ",
         pdf_erro: "Could not read this PDF. Check that the file isn't corrupted and try again.",
-        login_bloqueado: "🔒 Too many failed attempts. Wait 30 seconds and try again.",
+        login_bloqueado: " Too many failed attempts. Wait 30 seconds and try again.",
         tutorial_btn: "How to Use (Tutorial)"
       }
     };
@@ -637,10 +637,12 @@ function tocarIntroPs2Audio() {
       let icone = document.getElementById('toggleSenhaVisivel');
       if (campo.type === 'password') {
         campo.type = 'text';
-        icone.innerText = '🙈';
+        icone.innerText = 'OCU';
+        icone.setAttribute('aria-label', 'Ocultar senha');
       } else {
         campo.type = 'password';
-        icone.innerText = '👁️';
+        icone.innerText = 'VER';
+        icone.setAttribute('aria-label', 'Mostrar senha');
       }
     }
 
@@ -964,7 +966,7 @@ function tocarIntroPs2Audio() {
           document.getElementById('areaGeradorAdmin').style.display = 'flex';
           carregarUsuariosAdmin();
           carregarPagamentosAdmin();
-          notificar("👑 Painel Dono Desbloqueado!");
+          notificar(" Painel Dono Desbloqueado!");
         } else if (data.sucesso) {
           passInput.value = "";
           document.getElementById('areaLoginAdmin').style.display = 'none';
@@ -1006,7 +1008,7 @@ function tocarIntroPs2Audio() {
         return;
       }
       if (!validarNumeroWhatsApp(zap)) {
-        notificar("⚠️ Não foi possível identificar o WhatsApp da conta.");
+        notificar(" Não foi possível identificar o WhatsApp da conta.");
         return;
       }
 
@@ -1077,12 +1079,12 @@ function tocarIntroPs2Audio() {
           localStorage.setItem("usuario_zap_salvo", zap);
           notificar(
             data.bonusDias
-              ? "🎉 Pagamento confirmado com bônus de indicação!"
-              : "🎉 Pagamento confirmado e acesso liberado!"
+              ? " Pagamento confirmado com bônus de indicação!"
+              : " Pagamento confirmado e acesso liberado!"
           );
           iniciarMonitoramentoSessao(zap);
         } else if (data.pendente) {
-          notificar("⏳ O pagamento ainda não foi aprovado. Tente novamente em alguns segundos.");
+          notificar(" O pagamento ainda não foi aprovado. Tente novamente em alguns segundos.");
         } else {
           notificar(data.erro || "Não foi possível liberar o pagamento.");
         }
@@ -1097,7 +1099,7 @@ function tocarIntroPs2Audio() {
       let cupomIndicador = normalizarTelefone((document.getElementById('inputCupomIndicacao') || {}).value || '');
 
       if (!validarNumeroWhatsApp(zap)) {
-        notificar("⚠️ Número de WhatsApp inválido.");
+        notificar(" Número de WhatsApp inválido.");
         return;
       }
 
@@ -1171,7 +1173,7 @@ function tocarIntroPs2Audio() {
           const qr = document.getElementById('qrContainer');
           qr.classList.add('pix-error-visible');
           qr.innerHTML =
-            "<div>❌ Não foi possível gerar o Pix.</div>" +
+            "<div> Não foi possível gerar o Pix.</div>" +
             "<div style='margin-top:6px;font-weight:700;'>Motivo: " +
             String(erroDetalhado).replace(/[<>&]/g, '') +
             "</div><div style='margin-top:8px;color:var(--text-muted);font-weight:700;'>O plano continuará selecionado. Você pode tentar novamente.</div>";
@@ -1185,7 +1187,7 @@ function tocarIntroPs2Audio() {
         const qr = document.getElementById('qrContainer');
         qr.classList.add('pix-error-visible');
         qr.innerHTML =
-          "<div>❌ Erro de conexão com o serviço Pix.</div>" +
+          "<div> Erro de conexão com o serviço Pix.</div>" +
           "<div style='margin-top:6px;font-weight:700;'>" +
           String(err?.message || err).replace(/[<>&]/g, '') +
           "</div>";
@@ -1217,8 +1219,8 @@ function tocarIntroPs2Audio() {
 
             notificar(
               data.bonusDias
-                ? "🎉 Pagamento Aprovado com +3 Dias de Bônus!"
-                : "🎉 Pagamento Aprovado com sucesso!"
+                ? " Pagamento Aprovado com +3 Dias de Bônus!"
+                : " Pagamento Aprovado com sucesso!"
             );
 
             iniciarMonitoramentoSessao(zap);
@@ -1243,7 +1245,7 @@ function tocarIntroPs2Audio() {
       if (!campo.value) return;
       campo.select();
       navigator.clipboard.writeText(campo.value);
-      notificar("📋 Código Pix Copiado com sucesso!");
+      notificar(" Código Pix Copiado com sucesso!");
     }
 
     function atualizarVisibilidadeTesteGratis() {
@@ -1260,7 +1262,7 @@ function tocarIntroPs2Audio() {
 
       btn.style.display = 'flex';
       btn.disabled = false;
-      btn.innerText = '🎁 TESTE GRÁTIS — 10 DIAS';
+      btn.innerText = ' TESTE GRÁTIS — 10 DIAS';
     }
 
     async function ativarTesteGratis() {
@@ -1342,7 +1344,7 @@ function tocarIntroPs2Audio() {
       } catch (e) {
         mostrarMensagemAuth('erro', 'Erro ao ativar teste: ' + (e.message || e));
       } finally {
-        btn.innerText = '🎁 TESTE GRÁTIS — 10 DIAS';
+        btn.innerText = ' TESTE GRÁTIS — 10 DIAS';
         btn.disabled = false;
       }
     }
@@ -1466,7 +1468,7 @@ function tocarIntroPs2Audio() {
         clearTimeout(timerExpiracaoSessao);
 
         if (data.bloqueado) {
-          desconectarForcado("❌ Seu acesso foi bloqueado pelo administrador.");
+          desconectarForcado(" Seu acesso foi bloqueado pelo administrador.");
           return;
         }
 
@@ -1476,7 +1478,7 @@ function tocarIntroPs2Audio() {
         }
 
         if (data.deviceId && data.deviceId !== MEU_DEVICE_ID) {
-          desconectarForcado("⚠️ Esta conta foi conectada em outro aparelho!");
+          desconectarForcado(" Esta conta foi conectada em outro aparelho!");
           return;
         }
 
@@ -1555,7 +1557,7 @@ function tocarIntroPs2Audio() {
       document.getElementById('areaExecucao').style.display = 'none';
       
       document.getElementById('telaBloqueio').style.display = 'flex';
-      notificar("🔒 Você foi desconectado.");
+      notificar(" Você foi desconectado.");
     }
 
     document.getElementById('inputTel').addEventListener('input', limparAvisoRenovacao);
@@ -1594,10 +1596,10 @@ function tocarIntroPs2Audio() {
         notificar("Faça login antes de compartilhar sua indicação.");
         return;
       }
-      let texto = `🚀 Baixe o app *Pacote É Mato* para organizar e otimizar suas entregas!\n\n🎁 Use meu código de indicação *${zap}* ao entrar e ganhe *dias grátis adicionais*!\n\nAcesse: ${window.location.origin}`;
+      let texto = ` Baixe o app *Pacote É Mato* para organizar e otimizar suas entregas!\n\n Use meu código de indicação *${zap}* ao entrar e ganhe *dias grátis adicionais*!\n\nAcesse: ${window.location.origin}`;
       
       navigator.clipboard.writeText(texto);
-      notificar("📋 Link e texto de convite copiados!");
+      notificar(" Link e texto de convite copiados!");
       
       window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
     }
@@ -1812,10 +1814,10 @@ function tocarIntroPs2Audio() {
         const date = plan==='vitalicio' ? 'Sem prazo de vencimento' : adminExpiry(u) ? `Vencimento: ${new Date(adminExpiry(u)).toLocaleDateString('pt-BR')}` : 'Sem vencimento cadastrado';
         const emailConta = String(u.email || '').trim();
         const emailHtml = emailConta
-          ? `<div class="adm-email">✉️ <strong>${adminEscape(emailConta)}</strong></div>`
-          : `<div class="adm-email adm-email-empty">✉️ E-mail não cadastrado</div>`;
+          ? `<div class="adm-email"> <strong>${adminEscape(emailConta)}</strong></div>`
+          : `<div class="adm-email adm-email-empty"> E-mail não cadastrado</div>`;
 
-        groups[cat].push(`<article class="adm-account"><div class="adm-account-top"><div><div class="adm-phone">${zap}</div><div class="adm-plan">${adminLabels[plan]}${plan==='outros' ? ' · '+adminEscape(u.plano || 'Acesso personalizado') : ''}</div>${emailHtml}</div><span class="adm-status ${cat}">${status}</span></div><div class="adm-account-meta"><span>${date}</span><span>${Number(u.totalIndicacoes)||0} indicações</span></div><div class="adm-account-actions"><button onclick="prepararRenovacaoAdmin(${arg})">Renovar / trocar plano</button><a href="https://wa.me/${phone.startsWith('55') && phone.length>11 ? phone : '55'+phone}" target="_blank" rel="noopener">WhatsApp</a><details><summary>Gerenciar conta</summary><div class="adm-extra-actions"><button onclick="ajustarDiasRapido(${arg})">Ajustar dias</button><button onclick="redefinirSenhaAdmin(${arg})">🔑 Alterar senha</button><button class="adm-email-action" onclick="editarEmailAdmin(${arg})">✏️ Editar e-mail</button><button onclick="desconectarAparelhoAdmin(${arg})">Resetar aparelho</button><button onclick="alternarBloqueioUsuario(${arg},${u.bloqueado!==true})">${u.bloqueado ? 'Desbloquear' : 'Bloquear'}</button><button class="adm-danger" onclick="deletarUsuarioAdmin(${arg})">Excluir conta</button></div></details></div></article>`);
+        groups[cat].push(`<article class="adm-account"><div class="adm-account-top"><div><div class="adm-phone">${zap}</div><div class="adm-plan">${adminLabels[plan]}${plan==='outros' ? ' · '+adminEscape(u.plano || 'Acesso personalizado') : ''}</div>${emailHtml}</div><span class="adm-status ${cat}">${status}</span></div><div class="adm-account-meta"><span>${date}</span><span>${Number(u.totalIndicacoes)||0} indicações</span></div><div class="adm-account-actions"><button onclick="prepararRenovacaoAdmin(${arg})">Renovar / trocar plano</button><a href="https://wa.me/${phone.startsWith('55') && phone.length>11 ? phone : '55'+phone}" target="_blank" rel="noopener">WhatsApp</a><details><summary>Gerenciar conta</summary><div class="adm-extra-actions"><button onclick="ajustarDiasRapido(${arg})">Ajustar dias</button><button onclick="redefinirSenhaAdmin(${arg})"> Alterar senha</button><button class="adm-email-action" onclick="editarEmailAdmin(${arg})"> Editar e-mail</button><button onclick="desconectarAparelhoAdmin(${arg})">Resetar aparelho</button><button onclick="alternarBloqueioUsuario(${arg},${u.bloqueado!==true})">${u.bloqueado ? 'Desbloquear' : 'Bloquear'}</button><button class="adm-danger" onclick="deletarUsuarioAdmin(${arg})">Excluir conta</button></div></details></div></article>`);
       });
       Object.keys(groups).forEach(k=> {
         document.getElementById('countAdmin'+adminSections[k]).textContent=counts[k];
@@ -1858,9 +1860,9 @@ function tocarIntroPs2Audio() {
           htmlPagos += `
             <div class="user-row">
               <div>
-                <div style="font-weight:800; font-size:0.8rem; color:#34d399;">📱 ${adminEscape(p.whatsapp || '')}</div>
+                <div style="font-weight:800; font-size:0.8rem; color:#34d399;"> ${adminEscape(p.whatsapp || '')}</div>
                 <div style="font-size:0.68rem; color:var(--text-main);"><b>${adminEscape(p.plano || '')}</b> • R$ ${valorNum.toFixed(2).replace('.', ',')}</div>
-                <div style="font-size:0.6rem; color:var(--text-muted);">🕒 ${adminEscape(p.data || '')}</div>
+                <div style="font-size:0.6rem; color:var(--text-muted);"> ${adminEscape(p.data || '')}</div>
               </div>
             </div>`;
         });
@@ -1896,7 +1898,7 @@ function tocarIntroPs2Audio() {
       link.href = URL.createObjectURL(blob);
       link.download = `pacote_e_mato_clientes_${Date.now()}.csv`;
       link.click();
-      notificar("📥 Relatório CSV baixado com sucesso!");
+      notificar(" Relatório CSV baixado com sucesso!");
     }
 
     function alternarTabAdmin(tab) {
@@ -1920,7 +1922,8 @@ function tocarIntroPs2Audio() {
       input.type = mostrando ? 'password' : 'text';
 
       if (iconeEl) {
-        iconeEl.textContent = mostrando ? '👁️' : '🙈';
+        iconeEl.textContent = mostrando ? 'VER' : 'OCU';
+        iconeEl.setAttribute('aria-label', mostrando ? 'Mostrar senha' : 'Ocultar senha');
       }
     }
 
@@ -2039,7 +2042,7 @@ function tocarIntroPs2Audio() {
 
         notificar(
           data.mensagem ||
-          '🔑 Senha alterada. Plano e dias mantidos.'
+          ' Senha alterada. Plano e dias mantidos.'
         );
 
         await carregarUsuariosAdmin();
@@ -2163,7 +2166,7 @@ function tocarIntroPs2Audio() {
         conta.email = data.novoEmail || emailNovo;
 
         fecharModalEmailAdmin();
-        notificar(`✉️ E-mail alterado para ${conta.email}`);
+        notificar(` E-mail alterado para ${conta.email}`);
         await carregarUsuariosAdmin();
 
       } catch (e) {
@@ -2184,7 +2187,7 @@ function tocarIntroPs2Audio() {
           body: JSON.stringify({ whatsapp: zap })
         });
 
-        notificar(`📲 Celular de ${zap} desconectado. Ele já pode entrar em outro aparelho.`);
+        notificar(` Celular de ${zap} desconectado. Ele já pode entrar em outro aparelho.`);
         await carregarUsuariosAdmin();
       } catch (e) {
         notificar(e.message || 'Erro ao resetar aparelho.');
@@ -2255,12 +2258,12 @@ function tocarIntroPs2Audio() {
       const diasInput = parseInt(document.getElementById('inputDiasCustom').value, 10);
 
       if (!validarNumeroWhatsApp(zap)) {
-        notificar('⚠️ Digite um WhatsApp válido com DDD.');
+        notificar(' Digite um WhatsApp válido com DDD.');
         return;
       }
 
       if (!Number.isFinite(diasInput) || diasInput <= 0) {
-        notificar('⚠️ Informe uma quantidade de dias válida.');
+        notificar(' Informe uma quantidade de dias válida.');
         return;
       }
 
@@ -2275,8 +2278,8 @@ function tocarIntroPs2Audio() {
 
         notificar(
           data.vitalicio
-            ? `✅ Acesso vitalício ativado para ${zap}.`
-            : `✅ ${zap} liberado/renovado por ${diasInput} dias.`
+            ? ` Acesso vitalício ativado para ${zap}.`
+            : ` ${zap} liberado/renovado por ${diasInput} dias.`
         );
 
         document.getElementById('inputClienteZap').value = '';
@@ -2302,7 +2305,7 @@ function tocarIntroPs2Audio() {
       const horas = parseFloat(document.getElementById('selDuracaoAviso').value) || 24;
 
       if (ativo && !txt) {
-        notificar('⚠️ Digite o texto do aviso antes de publicar.');
+        notificar(' Digite o texto do aviso antes de publicar.');
         return;
       }
 
@@ -2317,7 +2320,7 @@ function tocarIntroPs2Audio() {
         });
 
         if (ativo) {
-          notificar(`📢 Aviso publicado por ${horas === 99999 ? 'tempo indeterminado' : horas + 'h'}!`);
+          notificar(` Aviso publicado por ${horas === 99999 ? 'tempo indeterminado' : horas + 'h'}!`);
         } else {
           document.getElementById('inputBroadcastTexto').value = '';
           notificar('Aviso global removido.');
@@ -2336,7 +2339,7 @@ function tocarIntroPs2Audio() {
           let agora = Date.now();
 
           if (data.ativo && data.mensagem && (agora <= data.expiraEm || !data.expiraEm)) {
-            banner.innerHTML = `<span style="font-size:1.1rem; vertical-align:middle;">📢</span> <b>AVISO GERAL:</b> ${data.mensagem}`;
+            banner.innerHTML = `<span style="font-size:1.1rem; vertical-align:middle;"></span> <b>AVISO GERAL:</b> ${data.mensagem}`;
             banner.style.display = 'block';
           } else {
             banner.style.display = 'none';
@@ -2601,7 +2604,7 @@ function tocarIntroPs2Audio() {
             <div class="hist-rota-card">
               <div class="hist-rota-top">
                 <div style="min-width:0;">
-                  <div class="hist-rota-nome">📄 ${nome}</div>
+                  <div class="hist-rota-nome"> ${nome}</div>
                   <div class="hist-status ${statusClasse}">${statusTexto}</div>
                 </div>
                 <div class="hist-rota-data">${data}</div>
@@ -2746,7 +2749,7 @@ function tocarIntroPs2Audio() {
             document.getElementById('resumoRotaBarra').style.width =
               `${pct}%`;
 
-            let rodape = concluida ? '✅ Rota concluída' : '🟢 Rota em andamento';
+            let rodape = concluida ? ' Rota concluída' : ' Rota em andamento';
 
             if (concluida && rota.rotaInicioEm && rota.salvoEm) {
               rodape += ` • ${formatarDuracaoRota(Math.max(0, rota.salvoEm - rota.rotaInicioEm))}`;
@@ -2777,8 +2780,8 @@ function tocarIntroPs2Audio() {
 
           document.getElementById('resumoRotaRodape').textContent =
             ultima.duracaoMs
-              ? `✅ Rota concluída • ${formatarDuracaoRota(ultima.duracaoMs)}`
-              : '✅ Rota concluída';
+              ? ` Rota concluída • ${formatarDuracaoRota(ultima.duracaoMs)}`
+              : ' Rota concluída';
 
           card.style.display = 'block';
           return;
@@ -2839,7 +2842,7 @@ function tocarIntroPs2Audio() {
         rotaInicioEm = Number(parsed.rotaInicioEm || parsed.salvoEm || Date.now());
         resumoFinalJaExibido = parsed.resumoFinalJaExibido === true;
 
-        document.getElementById('btnUploadTxt').innerHTML = "📄 " + (parsed.nomeArquivo || 'Rota Retomada');
+        document.getElementById('btnUploadTxt').innerHTML = " " + (parsed.nomeArquivo || 'Rota Retomada');
         document.getElementById('btnVerParadasModal').style.display = 'flex';
 
         document.getElementById('areaExecucao').style.display = 'block';
@@ -2895,7 +2898,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       atualizarResumoRotaHome();
 
       const btn = document.getElementById('btnUploadTxt');
-      if (btn) btn.innerHTML = '📄 Escolher outro PDF';
+      if (btn) btn.innerHTML = ' Escolher outro PDF';
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -2972,7 +2975,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
 
         let paradaFormatada = dados.stops.length > 1 ? `P${dados.stops[0]}-${dados.stops[dados.stops.length-1]}` : `P${dados.stops[0]}`;
         let badgeDestaque = ehDuplo 
-          ? `<div class="tag-duplo-info">🔹 PARADA MÚLTIPLA • ${qtd} pacotes</div>` 
+          ? `<div class="tag-duplo-info"> PARADA MÚLTIPLA • ${qtd} pacotes</div>` 
           : `<div style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">1 pacote</div>`;
 
         listaCards.push(`
@@ -2982,11 +2985,11 @@ document.getElementById('cardRetomarRota').style.display = 'none';
               ${badgeDestaque}
             </div>
             
-            <div class="endereco-texto-pro">📍 ${dados.endereco}</div>
+            <div class="endereco-texto-pro"> ${dados.endereco}</div>
 
             <div class="acoes-footer-pro">
               <button class="btn-acao-card" onclick="perguntarGps('${dados.endereco}', '${paradaFormatada}')">
-                🚗 Waze / Maps
+                 Waze / Maps
               </button>
             </div>
           </div>
@@ -3404,7 +3407,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       }
       const input = document.getElementById('pdfInput');
       if (input) input.value = '';
-      document.getElementById('btnUploadTxt').innerHTML = '📄 Escolher Arquivo PDF';
+      document.getElementById('btnUploadTxt').innerHTML = ' Escolher Arquivo PDF';
       document.getElementById('btnVerParadasModal').style.display = 'none';
       document.getElementById('areaExecucao').style.display = 'none';
       const uploadSec = document.getElementById('elSecaoUpload');
@@ -3431,7 +3434,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       document.getElementById('cardResult').classList.remove('error-state');
       document.getElementById('boxAviso').style.display = 'none';
       document.getElementById('inputManual').value = "";
-      document.getElementById('btnUploadTxt').innerHTML = "⏳ Lendo " + file.name.substring(0, 20) + "...";
+      document.getElementById('btnUploadTxt').innerHTML = " Lendo " + file.name.substring(0, 20) + "...";
       document.getElementById('areaExecucao').style.display = 'none';
       document.getElementById('btnVerParadasModal').style.display = 'none';
       abrirTelaCarregamentoPdf(file.name);
@@ -3444,7 +3447,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
       let reader = new FileReader();
 
       reader.onerror = function() {
-        document.getElementById('btnUploadTxt').innerHTML = "📄 Escolher Arquivo PDF";
+        document.getElementById('btnUploadTxt').innerHTML = " Escolher Arquivo PDF";
         document.getElementById('btnVerParadasModal').style.display = 'none';
         document.getElementById('areaExecucao').style.display = 'none';
         mostrarErroTelaCarregamentoPdf(
@@ -3737,7 +3740,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           concluirTelaCarregamentoPdf();
 
           notificar(
-            `✅ PDF processado com sucesso`
+            ` PDF processado com sucesso`
           );
 
         } catch (err) {
@@ -3759,7 +3762,7 @@ document.getElementById('cardRetomarRota').style.display = 'none';
           }
 
           document.getElementById('btnUploadTxt').innerHTML =
-            "📄 Escolher Arquivo PDF";
+            " Escolher Arquivo PDF";
           document.getElementById('btnVerParadasModal').style.display = 'none';
           document.getElementById('areaExecucao').style.display = 'none';
           const uploadSec = document.getElementById('elSecaoUpload');
@@ -4270,7 +4273,7 @@ try {
       } catch (_) {}
 
       document.getElementById('btnUploadTxt').innerHTML =
-        "📄 " + nomeArquivo.substring(0, 20) + "...";
+        " " + nomeArquivo.substring(0, 20) + "...";
 
       document.getElementById('btnVerParadasModal').style.display = 'flex';
       document.getElementById('areaExecucao').style.display = 'block';
@@ -4301,7 +4304,7 @@ try {
       );
 
       notificar(
-        `✅ Rota pronta • ${todosPacotes.size} pacotes • ${totalParadasFisicas} paradas`
+        ` Rota pronta • ${todosPacotes.size} pacotes • ${totalParadasFisicas} paradas`
       );
     }
 
@@ -4495,7 +4498,7 @@ try {
 
         notificar(dict.pdf_erro);
         document.getElementById('btnUploadTxt').innerHTML =
-          "📄 Escolher Arquivo PDF";
+          " Escolher Arquivo PDF";
         return;
       }
 
@@ -4510,7 +4513,7 @@ try {
       }
 
       document.getElementById('btnUploadTxt').innerHTML =
-        "📄 " + nomeArquivo.substring(0, 20) + "...";
+        " " + nomeArquivo.substring(0, 20) + "...";
 
       document.getElementById('btnVerParadasModal').style.display = 'flex';
       document.getElementById('areaExecucao').style.display = 'block';
@@ -4575,7 +4578,7 @@ try {
         .reduce((total, pacotes) => total + pacotes.length, 0);
 
       notificar(
-        `📦 ${todosPacotes.size} pacotes • 📍 ${totalParadasFisicas} paradas • 🔹 ${qtdPacotesMultiplos} pacotes múltiplos em ${qtdParadasMultiplas} paradas`
+        ` ${todosPacotes.size} pacotes •  ${totalParadasFisicas} paradas •  ${qtdPacotesMultiplos} pacotes múltiplos em ${qtdParadasMultiplas} paradas`
       );
     }
 
@@ -4635,7 +4638,7 @@ try {
         resStop.innerText = "P" + numP;
         
         let textoEndereco = nomeExibicao[endMatch] || "Endereço identificado no PDF";
-        resEndereco.innerText = "📍 " + textoEndereco;
+        resEndereco.innerText = " " + textoEndereco;
         resPacote.innerText = "Pacote: " + identificado;
 
         let outrosStops = listaDuplos.filter(p => p !== identificado).map(p => "P" + stopCorrespondente[p]);
@@ -4711,8 +4714,8 @@ try {
 
       if (faltam === 0) {
         texto.textContent = total > 1
-          ? `✅ Parada concluída • ${total} pacotes`
-          : '✅ Parada concluída';
+          ? ` Parada concluída • ${total} pacotes`
+          : ' Parada concluída';
       } else {
         texto.textContent = `Falta${faltam === 1 ? '' : 'm'} ${faltam} pacote${faltam === 1 ? '' : 's'}`;
       }
