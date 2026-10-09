@@ -1,4 +1,4 @@
-# Pacote É Mato — ETAPA 4 UI ROTA CORRIGIDA
+# Pacote É Mato — ETAPA 4 XLSX + MAPA + LOCALIZAÇÃO CORRIGIDA
 
 Versão cumulativa do Pacote É Mato com a tela de Roteirização reorganizada para uma experiência mobile-first inspirada funcionalmente em aplicativos profissionais de entregas, sem copiar marca, código ou identidade proprietária.
 
@@ -12,6 +12,10 @@ Versão cumulativa do Pacote É Mato com a tela de Roteirização reorganizada p
 - Veículo, tempo médio por parada, ponto inicial e navegação continuam em Configurações.
 - A importação XLSX/XLS/CSV continua usando o leitor existente, com detecção de cabeçalho e mapeamento manual de colunas.
 - Paradas sem coordenadas válidas não são enviadas ao mapa nem à rota.
+- O erro de MapLibre `Cannot read properties of undefined (reading 'lng')` foi corrigido na criação do marcador de partida.
+- A importação agora reconhece colunas opcionais de latitude/longitude; coordenadas válidas já presentes no XLSX aparecem imediatamente no mapa.
+- A localização atual é solicitada de forma controlada ao abrir a Roteirização, respeita permissões e fica separada do ponto inicial da rota.
+- A lista importada é preservada quando a geocodificação não está configurada e pode ser geocodificada novamente sem reimportar o arquivo.
 - O mapa usa OpenFreeMap `liberty` como estilo principal e possui um mapa-base raster de contingência caso o estilo vetorial não carregue.
 - A infraestrutura Cloudflare/Geoapify já existente no pacote NÃO foi configurada nem alterada nesta revisão.
 
@@ -29,7 +33,7 @@ Revisar / editar paradas
 Mapa + lista sincronizados quando houver coordenadas válidas
 ```
 
-Geocodificação automática e otimização por ruas continuam dependentes do serviço externo já previsto no projeto. Como esse serviço não será configurado nesta revisão, o aplicativo não inventa coordenadas nem simula otimização. As ações dependentes desse serviço ficam fora do menu enquanto ele não estiver disponível.
+Geocodificação automática e otimização por ruas continuam dependentes do serviço externo já previsto no projeto. Como esse serviço não será configurado nesta revisão, o aplicativo não inventa coordenadas nem simula otimização. A ação de localizar endereços permanece acessível para permitir nova tentativa sobre a mesma rota, enquanto a otimização real só aparece quando o serviço estiver configurado.
 
 ## Experiência mobile
 
@@ -98,4 +102,4 @@ A configuração visual do Worker foi retirada desta revisão para não exigir c
 3. Envie a estrutura inteira ao repositório, preservando as pastas `css/`, `js/` e demais diretórios.
 4. Não envie apenas os arquivos soltos da raiz, pois isso quebra os caminhos relativos.
 
-Consulte `RELATORIO-ETAPA-4-UI-ROTA-CORRIGIDA.md` para os testes executados e limitações do ambiente.
+Consulte `RELATORIO-ETAPA-4-XLSX-MAPA-LOCALIZACAO-CORRIGIDA.md` para o diagnóstico, testes executados e limitações do ambiente.

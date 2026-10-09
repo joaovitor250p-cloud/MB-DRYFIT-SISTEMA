@@ -74,6 +74,8 @@
     rotaOtimizada: false,
     mapaDisponivel: null,
     geocodificacaoResumo: null,
+    localizacaoAtual: null,
+    localizacaoAtualStatus: 'desconhecida',
     alteradoEm: null,
     sujo: false
   };

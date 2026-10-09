@@ -859,6 +859,10 @@
             <span id="routingOptimizedFlag" class="routing-optimized-flag">Rota em planejamento</span>
           </div>
           <div class="routing-map-tools">
+            <span id="routingLocationStatus" class="routing-location-status" role="status" aria-live="polite" hidden></span>
+            <button id="routingMyLocationBtn" class="routing-map-icon" type="button" aria-label="Atualizar minha localização" title="Minha localização">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>
+            </button>
             <button id="routingFitMapBtn" class="routing-map-icon" type="button" aria-label="Ver todas as paradas" title="Ver todas as paradas">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"></path></svg>
             </button>
@@ -942,7 +946,7 @@
         </div>
 
         <div id="routingServiceDeferredNote" class="routing-service-deferred-note">
-          Localização automática e otimização por ruas dependem do serviço externo. Nesta versão, essa infraestrutura não será configurada nem alterada.
+          Geocodificação dos endereços e otimização por ruas dependem do serviço externo. Nesta correção, essa infraestrutura não será alterada.
         </div>
       </section>
     </div>
@@ -1261,6 +1265,7 @@
   <script src="js/mapa/cache-geocodificacao.js"></script>
   <script src="js/mapa/geocodificacao.js"></script>
   <script src="js/mapa/mapa.js"></script>
+  <script src="js/mapa/localizacao-atual.js"></script>
 
   <script src="js/core/rota-store.js"></script>
   <script src="js/configuracoes/configuracoes.js"></script>

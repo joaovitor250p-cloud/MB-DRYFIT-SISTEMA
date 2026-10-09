@@ -5,6 +5,7 @@
   let pronto = false;
   let marcadores = new Map();
   let marcadorPartida = null;
+  let marcadorLocalizacaoAtual = null;
   let fitFeito = false;
   let loadTimer = null;
   let resizeObserver = null;
@@ -123,12 +124,6 @@
       });
       mapa.touchZoomRotate.disableRotation();
       mapa.addControl(new global.maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-      mapa.addControl(new global.maplibregl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: true,
-        showUserHeading: false,
-        fitBoundsOptions: { maxZoom: 16 }
-      }), 'top-right');
 
       const mapaPronto = () => {
         pronto = true;
@@ -253,16 +248,50 @@
     const valida = pontoValido(start);
     if (!valida) {
       if (marcadorPartida) { try { marcadorPartida.remove(); } catch (_) {} marcadorPartida = null; }
+    if (marcadorLocalizacaoAtual) { try { marcadorLocalizacaoAtual.remove(); } catch (_) {} marcadorLocalizacaoAtual = null; }
       return;
     }
+    const coordenada = [Number(start.lon), Number(start.lat)];
     if (!marcadorPartida) {
       const el = document.createElement('div');
       el.className = 'pemato-start-marker';
       el.textContent = 'P';
       el.setAttribute('aria-label', 'Ponto de partida');
-      marcadorPartida = new global.maplibregl.Marker({ element: el, anchor: 'center' }).addTo(mapa);
+      // O MapLibre precisa receber a posição antes de o marcador entrar no mapa.
+      // addTo() sem setLngLat() deixa _lngLat indefinido e pode gerar erro ao ler .lng.
+      marcadorPartida = new global.maplibregl.Marker({ element: el, anchor: 'center' })
+        .setLngLat(coordenada)
+        .addTo(mapa);
+      return;
     }
-    marcadorPartida.setLngLat([Number(start.lon), Number(start.lat)]);
+    marcadorPartida.setLngLat(coordenada);
+  }
+
+  function localizacaoAtualValida() {
+    const atual = state()?.localizacaoAtual;
+    return atual && valorCoordenadaValido(atual.lat, -90, 90) && valorCoordenadaValido(atual.lon, -180, 180);
+  }
+
+  function renderizarLocalizacaoAtual() {
+    if (!mapa || !pronto) return;
+    const atual = state()?.localizacaoAtual;
+    if (!localizacaoAtualValida()) {
+      if (marcadorLocalizacaoAtual) { try { marcadorLocalizacaoAtual.remove(); } catch (_) {} marcadorLocalizacaoAtual = null; }
+      return;
+    }
+    const coordenada = [Number(atual.lon), Number(atual.lat)];
+    if (!marcadorLocalizacaoAtual) {
+      const el = document.createElement('div');
+      el.className = 'pemato-current-location-marker';
+      el.setAttribute('aria-label', atual.desatualizada ? 'Última localização conhecida' : 'Minha localização atual');
+      marcadorLocalizacaoAtual = new global.maplibregl.Marker({ element: el, anchor: 'center' })
+        .setLngLat(coordenada)
+        .addTo(mapa);
+    } else {
+      marcadorLocalizacaoAtual.setLngLat(coordenada);
+    }
+    const el = marcadorLocalizacaoAtual.getElement?.();
+    if (el) el.classList.toggle('is-stale', atual.desatualizada === true);
   }
 
   function renderizarMarcadores() {
@@ -295,10 +324,12 @@
     if (!mapa || !pronto) return;
     const validas = paradas().filter(coordenadaValida);
     const start = state()?.pontoInicial;
-    if (!validas.length && !pontoValido(start)) return;
+    const atual = state()?.localizacaoAtual;
+    if (!validas.length && !pontoValido(start) && !localizacaoAtualValida()) return;
     const bounds = new global.maplibregl.LngLatBounds();
     validas.forEach(p => bounds.extend([Number(p.longitude), Number(p.latitude)]));
     if (pontoValido(start)) bounds.extend([Number(start.lon), Number(start.lat)]);
+    if (localizacaoAtualValida()) bounds.extend([Number(atual.lon), Number(atual.lat)]);
     try {
       mapa.fitBounds(bounds, { padding: { top: 70, right: 55, bottom: 80, left: 55 }, maxZoom: 16, duration: 550 });
       fitFeito = true;
@@ -313,12 +344,20 @@
     catch (_) {}
   }
 
+  function centralizarLocalizacaoAtual() {
+    if (!mapa || !pronto || !localizacaoAtualValida()) return false;
+    const atual = state().localizacaoAtual;
+    mapa.easeTo({ center: [Number(atual.lon), Number(atual.lat)], zoom: Math.max(mapa.getZoom(), 15), duration: 450 });
+    return true;
+  }
+
   function renderizar(opcoes) {
     garantirMapa();
     if (!mapa || !pronto) return;
     try { mapa.resize(); } catch (_) {}
     renderizarMarcadores();
     renderizarPartida();
+    renderizarLocalizacaoAtual();
     atualizarRota();
     if (opcoes?.fit) ajustarTodos();
   }
@@ -327,6 +366,7 @@
     marcadores.forEach(item => { try { item.marker.remove(); } catch (_) {} });
     marcadores.clear();
     if (marcadorPartida) { try { marcadorPartida.remove(); } catch (_) {} marcadorPartida = null; }
+    if (marcadorLocalizacaoAtual) { try { marcadorLocalizacaoAtual.remove(); } catch (_) {} marcadorLocalizacaoAtual = null; }
     clearTimeout(loadTimer);
     loadTimer = null;
     if (resizeObserver) { try { resizeObserver.disconnect(); } catch (_) {} resizeObserver = null; }
@@ -337,6 +377,11 @@
     fallbackBaseAtivo = false;
   }
 
+  global.addEventListener('pemato:localizacao:update', event => {
+    renderizar();
+    if (event?.detail?.centralizar === true) centralizarLocalizacaoAtual();
+  });
+
   global.PacoteEMatoMapa = Object.freeze({
     garantirMapa,
     renderizar,
@@ -344,6 +389,7 @@
     atualizarRota,
     ajustarTodos,
     centralizarParada,
+    centralizarLocalizacaoAtual,
     destruir,
     coordenadaValida
   });

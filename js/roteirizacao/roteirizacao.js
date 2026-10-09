@@ -259,7 +259,11 @@
 
   function atualizarDisponibilidadeAcoes() {
     const serviceReady = workerConfigurado();
-    document.querySelectorAll('.routing-service-action').forEach(el => { el.style.display = serviceReady ? '' : 'none'; });
+    const temParadas = (rotaAtual?.paradas?.length || 0) > 0;
+    // Localizar permanece acessível para permitir uma nova tentativa sem reimportar a planilha.
+    if ($('routingGeocodeBtn')) $('routingGeocodeBtn').style.display = temParadas ? '' : 'none';
+    // Otimização real só aparece quando o serviço de rota está configurado.
+    if ($('routingOptimizeBtn')) $('routingOptimizeBtn').style.display = serviceReady && temParadas ? '' : 'none';
     const note = $('routingServiceDeferredNote');
     if (note) note.style.display = serviceReady ? 'none' : 'block';
     const routeReady = !!rotaAtual?.geometria;
@@ -285,10 +289,16 @@
       btn.style.display = '';
       return;
     }
+    const faltantes = rotaAtual.paradas.filter(p => !paradaLocalizada(p)).length;
+    if (faltantes) {
+      btn.textContent = workerConfigurado() ? 'Localizar endereços' : 'Tentar localizar';
+      btn.dataset.action = 'localizar';
+      btn.style.display = '';
+      return;
+    }
     if (workerConfigurado()) {
-      const faltantes = rotaAtual.paradas.filter(p => !paradaLocalizada(p)).length;
-      btn.textContent = faltantes ? 'Localizar endereços' : 'Otimizar rota';
-      btn.dataset.action = faltantes ? 'localizar' : 'otimizar';
+      btn.textContent = 'Otimizar rota';
+      btn.dataset.action = 'otimizar';
       btn.style.display = '';
       return;
     }
@@ -512,7 +522,7 @@
   }
 
   function camposMapeamentoVisiveis() {
-    const permitidos = new Set(['endereco','logradouro','numero','cidade','estado','cep','complemento','apartamento','bloco','sala','loja','pacote','pacotes','observacao','id']);
+    const permitidos = new Set(['endereco','logradouro','numero','cidade','estado','cep','complemento','apartamento','bloco','sala','loja','pacote','pacotes','observacao','latitude','longitude','id']);
     return (global.PacoteEMatoImportacaoXLSX?.camposMapeaveis || []).filter(([campo]) => permitidos.has(campo));
   }
 
@@ -639,12 +649,18 @@
       await global.PacoteEMatoRotaStore.salvarRota(rotaAtual, { ativa: true });
       renderizarTudo({ fit: true });
 
-      const avisos = resultado.erros?.length ? ` ${resultado.erros.length} linha(s) foram ignoradas por problema de dados.` : '';
-      definirStatusImportacao(`${rotaAtual.paradas.length} parada(s) importada(s) da aba “${resultado.sheetName || 'Planilha'}”.${avisos}`, resultado.erros?.length ? 'warning' : 'success');
+      const ignoradas = resultado.erros?.length ? ` ${resultado.erros.length} linha(s) foram ignoradas por problema de dados.` : '';
+      const avisosCoords = resultado.avisos?.length ? ` ${resultado.avisos.length} linha(s) tinham coordenadas incompletas/inválidas e foram mantidas para geocodificação posterior.` : '';
+      definirStatusImportacao(`${rotaAtual.paradas.length} parada(s) importada(s) da aba “${resultado.sheetName || 'Planilha'}”.${ignoradas}${avisosCoords}`, (resultado.erros?.length || resultado.avisos?.length) ? 'warning' : 'success');
       definirEstadoPainel('expanded');
 
       if (!workerConfigurado() || !global.PacoteEMatoGeocodificacao?.endpointAtual?.()) {
-        definirStatusImportacao(`${rotaAtual.paradas.length} parada(s) importada(s). A localização automática e a otimização por ruas dependem do serviço externo, que ficará para uma etapa futura. Revise as paradas importadas pela lista.`, 'warning');
+        const localizadas = rotaAtual.paradas.filter(p => paradaLocalizada(p)).length;
+        const faltantes = rotaAtual.paradas.length - localizadas;
+        const msg = faltantes
+          ? `${rotaAtual.paradas.length} parada(s) importada(s): ${localizadas} já localizada(s) no mapa e ${faltantes} aguardando geocodificação. O serviço de geocodificação não está configurado; a lista foi preservada e você pode tentar localizar novamente sem reimportar.`
+          : `${rotaAtual.paradas.length} parada(s) importada(s) com coordenadas válidas e exibidas no mapa.`;
+        definirStatusImportacao(msg, faltantes ? 'warning' : 'success');
         definirEstadoPainel('expanded');
         return;
       }
@@ -728,7 +744,7 @@
     if (btn) btn.disabled = true;
     try {
       if (!global.PacoteEMatoGeocodificacao?.endpointAtual?.()) {
-        throw new Error('Localização automática indisponível nesta versão sem o serviço externo. Nenhuma coordenada será inventada.');
+        throw new Error('Serviço de geocodificação não configurado. As paradas importadas foram preservadas; configure o serviço em uma etapa futura e use “Tentar localizar” sem reimportar o XLSX.');
       }
       if (!opcoes?.silencioso) definirStatusImportacao('Validando endereços...', null);
       const resumoGeo = await global.PacoteEMatoGeocodificacao.geocodificarParadas(rotaAtual.paradas);

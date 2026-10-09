@@ -37,6 +37,8 @@
     if (nome === 'roteirizacao') {
       await global.PacoteEMatoRoteirizacao?.carregarRotaAtiva?.();
       setTimeout(() => global.PacoteEMatoMapa?.renderizar({ fit: true }), 100);
+      // Localização atual é apenas contexto do mapa; não substitui o ponto inicial configurado.
+      global.PacoteEMatoLocalizacaoAtual?.atualizarAutomaticamente?.();
     } else if (nome === 'bipagem') {
       await global.PacoteEMatoBipagemBridge?.prepararRotaAtivaParaBipagem?.({ iniciarScanner: true });
     } else if (nome === 'historico') {
